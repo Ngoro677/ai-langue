@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Code } from 'lucide-react';
 
 interface Circuit {
   id: number;
@@ -15,6 +14,11 @@ interface Skill {
   level: number;
   icon: string;
   color: string;
+}
+
+interface Technology {
+  name: string;
+  icon: string;
 }
 
 const TechSkills = () => {
@@ -33,6 +37,36 @@ const TechSkills = () => {
     }));
     setCircuits(newCircuits);
   }, []);
+
+  // Liste complète des technologies avec leurs icônes
+  const technologies: Technology[] = [
+    { name: "Laravel", icon: "https://cdn.simpleicons.org/laravel/FF2D20" },
+    { name: "Express", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg" },
+    { name: "React", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" },
+    { name: "Angular", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/angularjs/angularjs-original.svg" },
+    { name: "Node.js", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" },
+    { name: "JavaScript", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" },
+    { name: "Docker", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" },
+    { name: "PostgreSQL", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" },
+    { name: "MySQL", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original.svg" },
+    { name: "Python", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" },
+    { name: "n8n", icon: "https://cdn.simpleicons.org/n8n/EF4444" },
+    { name: ".NET", icon: "https://cdn.simpleicons.org/dotnet/512BD4" },
+    { name: "SQL Server", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/microsoftsqlserver/microsoftsqlserver-plain.svg" },
+    { name: "Azure", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg" },
+    { name: "LangChain", icon: "https://cdn.simpleicons.org/langchain/1C3C3C" },
+    { name: "LLM", icon: "https://cdn.simpleicons.org/openai/412991" },
+    { name: "Next.js", icon: "https://cdn.simpleicons.org/nextdotjs/000000" },
+    { name: "TypeScript", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" },
+    { name: "Tailwind CSS", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-original.svg" },
+    { name: "HTML5", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" },
+    { name: "CSS3", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" },
+    { name: "NestJS", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nestjs/nestjs-plain.svg" },
+    { name: "GitHub", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" },
+    { name: "GitLab", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/gitlab/gitlab-original.svg" },
+    { name: "Redis", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redis/redis-original.svg" },
+    { name: "Figma", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/figma/figma-original.svg" }
+  ];
 
   const frontendSkills = [
     { name: 'HTML', level: 100, icon: '📄', color: 'from-orange-500 to-orange-600' },
@@ -197,11 +231,82 @@ const TechSkills = () => {
         </svg>
       </div>
 
+      <h1 className="text-white max-w-7xl mx-auto px-6 mt-12 text-3xl font-bold mb-12">
+          Technologies
+        </h1>
+
+        {/* Scrolling Technologies Section */}
+        <div className=" overflow-hidden relative">
+          {/* Masque de dégradé aux bords pour effet fade */}
+          <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-gray-900 via-gray-900/80 to-transparent z-10 pointer-events-none"></div>
+          <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-gray-900 via-gray-900/80 to-transparent z-10 pointer-events-none"></div>
+          
+          <div className="relative">
+            {/* Animation de défilement infini */}
+            <div className="flex animate-scroll space-x-6 w-max">
+              {/* Première série */}
+              {technologies.map((tech, index) => (
+                <div
+                  key={`first-${index}`}
+                  className="flex-shrink-0 w-17 h-17 bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-700 hover:border-yellow-500 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-yellow-500/20 group"
+                  title={tech.name}
+                >
+                  <img
+                    src={tech.icon}
+                    alt={tech.name}
+                    className="w-8 h-8 object-contain group-hover:scale-110 transition-transform duration-300"
+                    loading="lazy"
+                    onError={(e) => {
+                      // Fallback si l'image ne charge pas
+                      const target = e.target as HTMLImageElement;
+                      const parent = target.parentElement;
+                      if (parent) {
+                        target.style.display = 'none';
+                        const fallback = document.createElement('div');
+                        fallback.className = 'text-white text-xs font-semibold text-center';
+                        fallback.textContent = tech.name.substring(0, 3);
+                        parent.appendChild(fallback);
+                      }
+                    }}
+                  />
+                </div>
+              ))}
+              {/* Deuxième série pour effet infini */}
+              {technologies.map((tech, index) => (
+                <div
+                  key={`second-${index}`}
+                  className="flex-shrink-0 w-17 h-17 bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-700 hover:border-yellow-500 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-yellow-500/20 group"
+                  title={tech.name}
+                >
+                  <img
+                    src={tech.icon}
+                    alt={tech.name}
+                    className="w-8 h-8 object-contain group-hover:scale-110 transition-transform duration-300"
+                    loading="lazy"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      const parent = target.parentElement;
+                      if (parent) {
+                        target.style.display = 'none';
+                        const fallback = document.createElement('div');
+                        fallback.className = 'text-white text-xs font-semibold text-center';
+                        fallback.textContent = tech.name.substring(0, 3);
+                        parent.appendChild(fallback);
+                      }
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-12">
         {/* Header */}
-        <h1 className="text-white text-4xl font-bold mb-12">
+        <h1 className="text-white text-3xl font-bold mb-12">
           Technologies <span className="text-yellow-500">détails</span>
         </h1>
+
 
         {/* Frontend Section */}
         <div className="grid lg:grid-cols-3 gap-8 mb-16">

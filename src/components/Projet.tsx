@@ -560,17 +560,19 @@ export default function Projet() {
 
             {/* Modal Popup */}
             {isModalOpen && selectedProject && (
-                <div className={`fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-300 ${
+                <div className={`fixed inset-0 bg-gray-900/10 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-all duration-300 ${
                     isModalAnimating ? 'opacity-100' : 'opacity-0'
-                }`}>
-                    <div className={`bg-gradient-to-br from-gray-800 to-gray-900 border border-white rounded-lg max-w-[32rem] w-full max-h-[95vh] overflow-y-auto transition-all duration-300 transform ${
+                }`}
+                onClick={closeModal}
+                >
+                    <div className={`border border-white bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-b-2xl shadow-2xl w-full max-w-2xl mx-auto max-h-[90vh] overflow-y-auto transition-all duration-300 transform ${
                         isModalAnimating ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 translate-y-4'
                     }`}>
                         {/* Close Button */}
                         <div className="flex justify-end p-4">
                             <button
                                 onClick={closeModal}
-                                className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors"
+                                className="w-8 h-8 bg-gray-800 cursor-pointer rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors"
                             >
                                 <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -618,7 +620,7 @@ export default function Projet() {
 
                             {/* Action Buttons */}
                             <div className="flex items-center justify-between">
-                                <button className="flex items-center gap-2 border border-white text-white px-4 py-2 rounded-lg hover:bg-yellow-400 hover:text-black transition-all duration-300">
+                                <button className="flex items-center gap-2 border border-white text-white px-4 py-2 rounded-lg hover:bg-yellow-400 hover:text-white transition-all duration-300">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
