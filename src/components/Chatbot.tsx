@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -10,14 +11,26 @@ interface Message {
 }
 
 export default function Chatbot() {
+  const { t, language } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: "Bonjour ! Je suis votre assistant IA. Je peux répondre à vos questions sur le portfolio de Fifaliantsoa Sarobidy, ses projets, ses compétences techniques et son expérience. Comment puis-je vous aider ?",
+      content: t('chatbot.bonjour'),
       timestamp: new Date(),
     },
   ]);
+
+  // Réinitialiser le message initial quand la langue change
+  useEffect(() => {
+    setMessages([
+      {
+        role: 'assistant',
+        content: t('chatbot.bonjour'),
+        timestamp: new Date(),
+      },
+    ]);
+  }, [language, t]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -76,7 +89,7 @@ export default function Chatbot() {
       console.error('Erreur:', error);
       const errorMessage: Message = {
         role: 'assistant',
-        content: "Désolé, une erreur s'est produite. Veuillez réessayer plus tard.",
+        content: t('chatbot.erreur'),
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, errorMessage]);
@@ -98,9 +111,17 @@ export default function Chatbot() {
       <div className="fixed cursor-pointer z-50 sm:bottom-12 bottom-3 sm:left-12 left-3">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="w-12 h-12 cursor-pointer flex items-center justify-center rounded-full bg-gray-900/80 backdrop-blur-sm border-2 border-white hover:border-yellow-400 shadow-lg transition-all duration-300 hover:scale-110 group"
+          className="w-12 h-12 cursor-pointer flex items-center justify-center rounded-full bg-gray-900/80 backdrop-blur-sm border-2 border-white hover:border-yellow-400 shadow-lg transition-all duration-300 hover:scale-110 group relative overflow-visible"
           aria-label="Ouvrir le chatbot"
         >
+          {/* Tooltip */}
+          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs font-semibold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-300 z-[60] shadow-lg border border-gray-700">
+            {t('chatbot.tooltip')}
+            {/* Flèche du tooltip */}
+            <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+              <div className="w-2 h-2 bg-gray-900 border-r border-b border-gray-700 transform rotate-45"></div>
+            </div>
+          </div>
           <p className="text-white text-2xl font-bold group-hover:text-yellow-400 transition-colors">?</p>
         </button>
       </div>
@@ -119,7 +140,7 @@ export default function Chatbot() {
             <div className="bg-gray-800/90 px-4 py-3 flex items-center justify-between border-b border-gray-700">
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                <h3 className="text-white font-semibold text-sm">Assistant IA</h3>
+                <h3 className="text-white font-semibold text-sm">{t('chatbot.assistantIA')}</h3>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
@@ -173,7 +194,7 @@ export default function Chatbot() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="Tapez votre question..."
+                  placeholder={t('chatbot.placeholder')}
                   className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400 transition-colors"
                   disabled={isLoading}
                 />
@@ -182,7 +203,7 @@ export default function Chatbot() {
                   disabled={isLoading || !input.trim()}
                   className="bg-yellow-400 hover:bg-yellow-500 text-gray-900 px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
                 >
-                  Envoyer
+                  {t('chatbot.envoyer')}
                 </button>
               </div>
             </div>

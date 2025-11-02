@@ -1,6 +1,9 @@
 'use client';
 
+import { useI18n } from '@/lib/i18n/I18nProvider';
+
 export default function Footer() {
+  const { t } = useI18n();
 
   return (
     <footer className="bg-gray-900 text-white py-12">
@@ -41,9 +44,9 @@ export default function Footer() {
 
           {/* Contact Information */}
           <div className="space-y-2 text-gray-300">
-            <p className="text-lg">+261 34 46 536 09</p>
-            <p className="text-lg">sarobidy.fifaliantsoa@ilomad.com</p>
-            <p className="text-lg">Madagascar</p>
+            <p className="text-lg">{t('footer.phone')}</p>
+            <p className="text-lg">{t('footer.email')}</p>
+            <p className="text-lg">{t('footer.location')}</p>
           </div>
         </div>
 
@@ -54,12 +57,12 @@ export default function Footer() {
         <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
           {/* Copyright */}
           <div className="text-gray-300 text-sm">
-            Copyright @2026 by Fifaliantsoa Sarobidy
+            {t('footer.copyright')}
           </div>
 
           {/* Language Flags */}
           <div className="text-gray-300 text-sm">
-            Fianarantsoa
+            {t('footer.ville')}
           </div>
         </div>
       </div>

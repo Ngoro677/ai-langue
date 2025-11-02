@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 interface Circuit {
   id: number;
@@ -21,7 +22,8 @@ interface Technology {
   icon: string;
 }
 
-const TechSkills = () => {
+export default function TechSkills() {
+  const { t } = useI18n();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [circuits, setCircuits] = useState<Circuit[]>([]);
 
@@ -155,7 +157,7 @@ const TechSkills = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-8 relative overflow-hidden">
       {/* Animated Circuit Background */}
       <div className="absolute inset-0 opacity-20 pointer-events-none">
         <svg className="w-full h-full">
@@ -232,25 +234,32 @@ const TechSkills = () => {
       </div>
 
       <h1 className="text-white max-w-7xl mx-auto px-6 mt-12 text-3xl font-bold mb-12">
-          Technologies
+          {t('techno.technologies')}
         </h1>
 
         {/* Scrolling Technologies Section */}
-        <div className=" overflow-hidden relative">
+        <div className="relative">
           {/* Masque de dégradé aux bords pour effet fade */}
           <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-gray-900 via-gray-900/80 to-transparent z-10 pointer-events-none"></div>
           <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-gray-900 via-gray-900/80 to-transparent z-10 pointer-events-none"></div>
           
-          <div className="relative">
+          <div className="relative -mt-12 overflow-hidden py-12">
             {/* Animation de défilement infini */}
             <div className="flex animate-scroll space-x-6 w-max">
               {/* Première série */}
               {technologies.map((tech, index) => (
                 <div
                   key={`first-${index}`}
-                  className="flex-shrink-0 w-17 h-17 bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-700 hover:border-yellow-500 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-yellow-500/20 group"
-                  title={tech.name}
+                  className="flex-shrink-0 w-17 bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-700 hover:border-yellow-500 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-yellow-500/20 group relative"
                 >
+                  {/* Tooltip */}
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs font-semibold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-300 z-50 shadow-lg border border-gray-700">
+                    {tech.name}
+                    {/* Flèche du tooltip */}
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                      <div className="w-2 h-2 bg-gray-900 border-r border-b border-gray-700 transform rotate-45"></div>
+                    </div>
+                  </div>
                   <img
                     src={tech.icon}
                     alt={tech.name}
@@ -275,9 +284,16 @@ const TechSkills = () => {
               {technologies.map((tech, index) => (
                 <div
                   key={`second-${index}`}
-                  className="flex-shrink-0 w-17 h-17 bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-700 hover:border-yellow-500 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-yellow-500/20 group"
-                  title={tech.name}
+                  className="flex-shrink-0 w-17 h-17 bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-700 hover:border-yellow-500 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-yellow-500/20 group relative"
                 >
+                  {/* Tooltip */}
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs font-semibold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-300 z-50 shadow-lg border border-gray-700">
+                    {tech.name}
+                    {/* Flèche du tooltip */}
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                      <div className="w-2 h-2 bg-gray-900 border-r border-b border-gray-700 transform rotate-45"></div>
+                    </div>
+                  </div>
                   <img
                     src={tech.icon}
                     alt={tech.name}
@@ -301,17 +317,17 @@ const TechSkills = () => {
           </div>
         </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 py-12">
+      <div className="relative z-10 max-w-7xl mx-auto px-6">
         {/* Header */}
         <h1 className="text-white text-3xl font-bold mb-12">
-          Technologies <span className="text-yellow-500">détails</span>
+          {t('techno.technologies')} <span className="text-yellow-500">{t('techno.details')}</span>
         </h1>
 
 
         {/* Frontend Section */}
         <div className="grid lg:grid-cols-3 gap-8 mb-16">
           <div className="lg:col-span-2">
-            <SectionTitle icon="</>" title="Frontend" subtitle="" />
+            <SectionTitle icon="</>" title={t('techno.frontend')} subtitle="" />
             <div className="grid grid-cols-3 gap-2 md:gap-4">
               {frontendSkills.map((skill, index) => (
                 <SkillCard key={skill.name} skill={skill} index={index} />
@@ -320,8 +336,8 @@ const TechSkills = () => {
           </div>
           <div>
             <InfoBox
-              title="Frontend"
-              description="Le frontend désigne la partie d'une Site Web ou d'une application avec laquelle les utilisateurs interagissent directement. Il inclut l'interface utilisateur(UI) et est développé à l'aide de technologies web comme HTML, CSS et JavaScript, souvent complétées par des Frameworks et bibliothèques tels que React, Next et Angular."
+              title={t('techno.frontend')}
+              description={t('techno.frontendDesc')}
             />
           </div>
         </div>
@@ -329,7 +345,7 @@ const TechSkills = () => {
         {/* Backend Section */}
         <div className="grid lg:grid-cols-3 gap-8 mb-16">
           <div className="lg:col-span-2">
-            <SectionTitle icon="</>" title="Backend et" subtitle="base de donnée" />
+            <SectionTitle icon="</>" title={t('techno.backend')} subtitle={t('techno.baseDonnee')} />
             <div className="grid grid-cols-3 gap-2 md:gap-4">
               {backendSkills.map((skill, index) => (
                 <SkillCard key={skill.name} skill={skill} index={index} />
@@ -338,8 +354,8 @@ const TechSkills = () => {
           </div>
           <div>
             <InfoBox
-              title="Backend et base de donnée"
-              description="Le backend gère la logique métier, les requêtes utilisateurs et les bases de données. NodeJs basé sur Javascript permet des applications serveur évolutives. Express simplifie le routage et le middleware, tandis que Nest offre une approche structuré pour les projet complexes."
+              title={`${t('techno.backend')} ${t('techno.baseDonnee')}`}
+              description={t('techno.backendDesc')}
             />
           </div>
         </div>
@@ -347,7 +363,7 @@ const TechSkills = () => {
         {/* Design Tools Section */}
         <div className="grid lg:grid-cols-3 gap-8 mb-16">
           <div className="lg:col-span-2">
-            <SectionTitle icon="✏️" title="Outils de" subtitle="design" />
+            <SectionTitle icon="✏️" title={t('techno.outilsDesign')} subtitle={t('techno.design')} />
             <div className="grid grid-cols-3 gap-2 md:gap-4">
               {designTools.map((skill, index) => (
                 <SkillCard key={skill.name} skill={skill} index={index} />
@@ -356,8 +372,8 @@ const TechSkills = () => {
           </div>
           <div>
             <InfoBox
-              title="Outils de design"
-              description="Les outils de design sont logiciels permettant de créer de prototype et visualiser des interfaces UI / UX, des graphismes et des mises en pages."
+              title={`${t('techno.outilsDesign')} ${t('techno.design')}`}
+              description={t('techno.designDesc')}
             />
           </div>
         </div>
@@ -365,7 +381,7 @@ const TechSkills = () => {
         {/* Dev Tools Section */}
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            <SectionTitle icon="🔧" title="Test unitaire" subtitle="et Outils" />
+            <SectionTitle icon="🔧" title={t('techno.testUnitaire')} subtitle={t('techno.outils')} />
             <div className="grid grid-cols-3 gap-2 md:gap-4">
               {devTools.map((skill, index) => (
                 <SkillCard key={skill.name} skill={skill} index={index} />
@@ -374,14 +390,13 @@ const TechSkills = () => {
           </div>
           <div>
             <InfoBox
-              title="Test unitaire et Outils"
-              description="Les tests unitaires garantissent la fiabilité du code en détectant les bugs. Outils comme git est un system de gestion de version, suivi les modifications, permet le branching, le merging et facilite la collaboration, assurant une version une gestion efficace historique de la code."
+              title={`${t('techno.testUnitaire')} ${t('techno.outils')}`}
+              description={t('techno.outilsDesc')}
             />
           </div>
         </div>
+
       </div>
     </div>
   );
-};
-
-export default TechSkills;
+}

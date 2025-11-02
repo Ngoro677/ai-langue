@@ -1,13 +1,23 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { useI18n } from '@/lib/i18n/I18nProvider';
+
+interface Project {
+    image: string;
+    title: string;
+    url: string;
+    technologies: string[];
+    type?: string;
+}
 
 export default function Projet() {
+    const { t } = useI18n();
     const [hoveredSection, setHoveredSection] = useState<string | null>(null);
     const [hoverDirection, setHoverDirection] = useState<'left' | 'right' | null>(null);
     const [hoveredRow, setHoveredRow] = useState<string | null>(null);
     const [hoveredProject, setHoveredProject] = useState<string | null>(null);
-    const [selectedProject, setSelectedProject] = useState<any>(null);
+    const [selectedProject, setSelectedProject] = useState<Project | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isModalAnimating, setIsModalAnimating] = useState(false);
     const webScrollRef = useRef<HTMLDivElement>(null);
@@ -71,7 +81,7 @@ export default function Projet() {
         }
     };
 
-    const openModal = (project: any, projectType: string = 'web') => {
+    const openModal = (project: Project, projectType: string = 'web') => {
         setSelectedProject({...project, type: projectType});
         setIsModalOpen(true);
         // Délai pour permettre l'animation d'entrée
@@ -113,7 +123,7 @@ export default function Projet() {
                     }}
                 >
                     <h2 className="text-2xl font-bold text-white mb-8">
-                        Projet <span className="text-yellow-400">Web</span>
+                        {t('projet.projetWeb')}
                     </h2>
 
                     <div 
@@ -162,7 +172,7 @@ export default function Projet() {
                                             <div className="flex justify-center space-x-3 py-3">
                                                 <div 
                                                     className="w-8 h-8 border border-white rounded-full flex items-center justify-center cursor-pointer hover:bg-yellow-400 hover:text-black transition-all duration-300"
-                                                    onClick={() => openModal(project)}
+                                                    onClick={() => openModal(project as Project)}
                                                 >
                                                     <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -360,7 +370,7 @@ export default function Projet() {
                     }}
                 >
                     <h2 className="text-2xl font-bold text-white mb-8">
-                        Projet <span className="text-yellow-400">Mobile</span>
+                        {t('projet.projetMobile')}
                     </h2>
 
                     <div 
@@ -480,7 +490,7 @@ export default function Projet() {
                     onMouseLeave={() => setHoveredSection(null)}
                 >
                     <h2 className="text-2xl font-bold text-white mb-8">
-                        Projet <span className="text-yellow-400">IA</span>
+                        {t('projet.projetIA')}
                     </h2>
 
                     <div className="relative">
@@ -594,20 +604,18 @@ export default function Projet() {
                             <h3 className="text-white text-2xl font-bold mb-4">{selectedProject.title}</h3>
                             
                             <p className="text-gray-300 mb-6 leading-relaxed">
-                                Conception et développement de {selectedProject.title}, réalisé avec les dernières technologies. 
-                                Une création alliant design moderne et expérience utilisateur fluide pour mettre en valeur 
-                                l'innovation et l'esthétique contemporaine.
+                                {t('projet.description', { title: selectedProject.title })}
                             </p>
 
                             <div className="space-y-2 mb-6">
                                 <p className="text-gray-400 text-sm">
-                                    <span className="text-white font-semibold">Client:</span> {selectedProject.title}
+                                    <span className="text-white font-semibold">{t('projet.client')}:</span> {selectedProject.title}
                                 </p>
                                 <p className="text-gray-400 text-sm">
-                                    <span className="text-white font-semibold">Année de réalisation:</span> 2024
+                                    <span className="text-white font-semibold">{t('projet.annee')}:</span> 2024
                                 </p>
                                 <p className="text-gray-400 text-sm">
-                                    <span className="text-white font-semibold">URL du site:</span> {selectedProject.url}
+                                    <span className="text-white font-semibold">{t('projet.url')}:</span> {selectedProject.url}
                                 </p>
                             </div>
 
@@ -625,7 +633,7 @@ export default function Projet() {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                     </svg>
-                                    Visiter le site
+                                    {t('projet.visiter')}
                                 </button>
 
                                 <button className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors">
