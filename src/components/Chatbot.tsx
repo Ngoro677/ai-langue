@@ -108,7 +108,7 @@ export default function Chatbot() {
   return (
     <>
       {/* Bouton d'ouverture du chatbot */}
-      <div className="fixed cursor-pointer z-50 sm:bottom-12 bottom-3 sm:left-12 left-3">
+      <div className="fixed cursor-pointer z-50 sm:bottom-12 bottom-26 sm:left-12 left-3">
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="w-12 h-12 cursor-pointer flex items-center justify-center rounded-full bg-gray-900/80 backdrop-blur-sm border-2 border-white hover:border-yellow-400 shadow-lg transition-all duration-300 hover:scale-110 group relative overflow-visible"

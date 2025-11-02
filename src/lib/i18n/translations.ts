@@ -16,6 +16,7 @@ export const translations = {
       accueil: "Accueil",
       projet: "Projet",
       techno: "Techno",
+      profil: "Profil",
     },
     // Projet
     projet: {
@@ -89,6 +90,7 @@ export const translations = {
       accueil: "Home",
       projet: "Projects",
       techno: "Tech",
+      profil: "Profile",
     },
     // Projet
     projet: {
@@ -162,6 +164,7 @@ export const translations = {
       accueil: "Fandraisana",
       projet: "Tetikasa",
       techno: "Teknologia",
+      profil: "Profil",
     },
     // Projet
     projet: {

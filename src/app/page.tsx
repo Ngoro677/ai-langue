@@ -2,6 +2,7 @@
 
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
+import MobileNavigation from '@/components/MobileNavigation';
 import Accueil from '@/components/Accueil';
 import Projet from '@/components/Projet';
 import Techno from '@/components/Techno';
@@ -12,7 +13,7 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       <Header />
-      <main>
+      <main className=" md:pb-0">
         <section id="accueil">
           <Accueil />
         </section>
@@ -24,6 +25,7 @@ export default function Home() {
         </section>
       </main>
       <Footer />
+      <MobileNavigation />
     </div>
   );
 }
