@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import ProfileModal from './ProfileModal';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 export default function Header() {
+  const { t } = useI18n();
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeLink, setActiveLink] = useState('accueil');
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -101,7 +103,7 @@ export default function Header() {
                     : 'text-white hover:text-yellow-400'
                 }`}
               >
-                Accueil
+                {t('nav.accueil')}
                 {activeLink === 'accueil' && (
                   <span className="ml-2 w-8 h-0.5 bg-yellow-400"></span>
                 )}
@@ -114,7 +116,7 @@ export default function Header() {
                     : 'text-white hover:text-yellow-400'
                 }`}
               >
-                Projet
+                {t('nav.projet')}
                 {activeLink === 'projet' && (
                   <span className="ml-2 w-8 h-0.5 bg-yellow-400"></span>
                 )}
@@ -127,7 +129,7 @@ export default function Header() {
                     : 'text-white hover:text-yellow-400'
                 }`}
               >
-                Techno
+                {t('nav.techno')}
                 {activeLink === 'techno' && (
                   <span className="ml-2 w-8 h-0.5 bg-yellow-400"></span>
                 )}

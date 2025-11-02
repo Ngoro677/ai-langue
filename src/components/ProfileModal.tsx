@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface ProfileModalProps {
 }
 
 export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
+  const { t } = useI18n();
   const [mounted, setMounted] = useState(false);
 
   // S'assurer que le composant est monté côté client pour le portal
@@ -176,7 +178,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                     <div>
                       <h3 className="text-white font-bold text-lg">FIFALIANTSOA Sarobidy</h3>
                       <p className="text-gray-300 text-sm">
-                        Développeur fullstack et IA - Intégrateur Web - Designer UI/UX
+                        {t('profile.profession')}
                       </p>
                     </div>
                   </div>
@@ -187,7 +189,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                   <div className="flex items-start space-x-4">
                     <div className="text-2xl">🌐</div>
                     <div className="flex-1">
-                      <h3 className="text-white font-semibold mb-2">Langues</h3>
+                      <h3 className="text-white font-semibold mb-2">{t('profile.langues')}</h3>
                       <p className="text-gray-300 text-sm">{languages.join(', ')}</p>
                     </div>
                   </div>
@@ -195,7 +197,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
 
                 {/* Diplômes et certifications */}
                 <div className="mb-6">
-                  <h3 className="text-white text-xl font-bold mb-4">Diplômes et certifications</h3>
+                  <h3 className="text-white text-xl font-bold mb-4">{t('profile.diplomes')}</h3>
                   <div className="space-y-3">
                     {diplomas.map((diploma, index) => (
                       <motion.div
@@ -227,7 +229,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
 
                 {/* Expériences */}
                 <div className="mb-6">
-                  <h3 className="text-white text-xl font-bold mb-4">Expériences</h3>
+                  <h3 className="text-white text-xl font-bold mb-4">{t('profile.experiences')}</h3>
                   <div className="space-y-3">
                     {experiences.map((exp, index) => (
                       <motion.div
@@ -282,7 +284,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                   }}
                   className="w-full border border-yellow-400 hover:border-yellow-400 hover:bg-transparent hover:text-yellow-400 border-2 border-transparent text-yellow-400 font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
                 >
-                  Contacter
+                  {t('profile.contacter')}
                 </button>
               </div>
             </div>
