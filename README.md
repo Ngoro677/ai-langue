@@ -1,36 +1,172 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Portfolio Ny Nivoarijaona
 
-## Getting Started
+Un portfolio moderne et professionnel développé avec Next.js, GSAP et Prismic CMS.
 
-First, run the development server:
+## 🚀 Fonctionnalités
+
+- **Design moderne et professionnel** avec thème sombre
+- **Animations fluides** avec GSAP
+- **Gestion de contenu** avec Prismic CMS
+- **Responsive design** pour tous les appareils
+- **Performance optimisée** avec Next.js 15
+- **TypeScript** pour une meilleure maintenabilité
+
+## 🛠️ Technologies utilisées
+
+- **Next.js 15** - Framework React
+- **TypeScript** - Typage statique
+- **Tailwind CSS** - Framework CSS
+- **GSAP** - Animations avancées
+- **Prismic** - CMS headless
+- **Lucide React** - Icônes
+
+## 📦 Installation
+
+1. Clonez le repository :
+```bash
+git clone <votre-repo>
+cd mon-projet
+```
+
+2. Installez les dépendances :
+```bash
+npm install
+```
+
+3. Configurez les variables d'environnement :
+```bash
+cp env.example .env.local
+```
+
+4. Modifiez le fichier `.env.local` avec vos clés Prismic :
+```
+PRISMIC_API_ENDPOINT=https://votre-repo.prismic.io/api/v2
+PRISMIC_ACCESS_TOKEN=votre-token-ici
+```
+
+## 🚀 Démarrage
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Ouvrez [http://localhost:3000](http://localhost:3000) dans votre navigateur.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Structure du projet
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/                 # Pages Next.js
+│   ├── globals.css     # Styles globaux
+│   ├── layout.tsx      # Layout principal
+│   └── page.tsx        # Page d'accueil
+├── components/         # Composants React
+│   ├── Header.tsx      # En-tête avec navigation
+│   ├── Hero.tsx        # Section hero
+│   ├── Projects.tsx    # Section projets
+│   ├── Technologies.tsx # Section technologies
+│   ├── Clients.tsx     # Section clients
+│   ├── Footer.tsx      # Pied de page
+│   └── BottomNavigation.tsx # Navigation mobile
+├── lib/               # Utilitaires
+│   └── prismic.ts     # Configuration Prismic
+└── public/            # Assets statiques
+    └── images/        # Images et icônes
+```
 
-## Learn More
+## 🎨 Personnalisation
 
-To learn more about Next.js, take a look at the following resources:
+### Ajouter votre photo de profil
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Remplacez le fichier `public/images/profile.jpg` par votre photo.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Modifier les projets
 
-## Deploy on Vercel
+Les projets sont définis dans `src/components/Projects.tsx`. Vous pouvez :
+- Modifier les données directement dans le composant
+- Intégrer avec Prismic pour une gestion dynamique
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Personnaliser les couleurs
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Modifiez les variables CSS dans `src/app/globals.css` :
+
+```css
+:root {
+  --background: #0f0f0f;
+  --foreground: #ffffff;
+  --primary: #dc2626;
+  --secondary: #1f2937;
+  --accent: #3b82f6;
+}
+```
+
+## 🔧 Configuration Prismic
+
+1. Créez un compte sur [Prismic](https://prismic.io)
+2. Créez un nouveau repository
+3. Configurez les types de contenu :
+   - `project` - Pour les projets
+   - `technology` - Pour les technologies
+   - `client` - Pour les clients
+   - `testimonial` - Pour les témoignages
+
+4. Ajoutez vos clés API dans `.env.local`
+
+## 📱 Responsive Design
+
+Le portfolio est entièrement responsive avec :
+- **Mobile First** - Optimisé pour mobile
+- **Tablette** - Adaptation pour tablettes
+- **Desktop** - Expérience complète sur desktop
+
+## 🎭 Animations GSAP
+
+Les animations incluent :
+- **Fade In** - Apparition en fondu
+- **Slide In** - Glissement depuis les côtés
+- **Scale In** - Agrandissement progressif
+- **Parallax** - Effet de parallaxe
+- **Scroll Trigger** - Animations au scroll
+
+## 🚀 Déploiement
+
+### Vercel (Recommandé)
+
+1. Connectez votre repository à Vercel
+2. Configurez les variables d'environnement
+3. Déployez automatiquement
+
+### Autres plateformes
+
+```bash
+npm run build
+npm start
+```
+
+## 📄 Licence
+
+Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+
+## 👨‍💻 Auteur
+
+**Ny Nivoarijaona**
+- Email: nynivoarijaona@gmail.com
+- Téléphone: 034 15 684 08
+- Localisation: Madagascar
+
+## 🤝 Contribution
+
+Les contributions sont les bienvenues ! N'hésitez pas à :
+1. Fork le projet
+2. Créer une branche feature
+3. Commit vos changements
+4. Push vers la branche
+5. Ouvrir une Pull Request
+
+## 📞 Support
+
+Pour toute question ou support, contactez-moi à nynivoarijaona@gmail.com
+
+---
+
+**Développé avec ❤️ par Ny Nivoarijaona**

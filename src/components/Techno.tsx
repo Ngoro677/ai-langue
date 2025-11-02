@@ -1,0 +1,282 @@
+import React, { useState, useEffect } from 'react';
+import { Code } from 'lucide-react';
+
+interface Circuit {
+  id: number;
+  x: number;
+  y: number;
+  width: number;
+  rotation: number;
+  type: number;
+}
+
+interface Skill {
+  name: string;
+  level: number;
+  icon: string;
+  color: string;
+}
+
+const TechSkills = () => {
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+  const [circuits, setCircuits] = useState<Circuit[]>([]);
+
+  useEffect(() => {
+    // Generate random circuits
+    const newCircuits = Array.from({ length: 30 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      width: Math.random() * 150 + 50,
+      rotation: Math.random() * 360,
+      type: Math.floor(Math.random() * 3)
+    }));
+    setCircuits(newCircuits);
+  }, []);
+
+  const frontendSkills = [
+    { name: 'HTML', level: 100, icon: '📄', color: 'from-orange-500 to-orange-600' },
+    { name: 'CSS', level: 100, icon: '🎨', color: 'from-blue-500 to-blue-600' },
+    { name: 'JS / TS', level: 98, icon: '⚡', color: 'from-yellow-500 to-yellow-600' },
+    { name: 'TailwindCss', level: 97, icon: '🌊', color: 'from-cyan-500 to-cyan-600' },
+    { name: 'React', level: 96, icon: '⚛️', color: 'from-blue-400 to-blue-500' },
+    { name: 'Next', level: 96, icon: '▲', color: 'from-gray-800 to-black' },
+    { name: 'Angular', level: 90, icon: '🅰️', color: 'from-red-600 to-red-700' },
+    { name: 'Zustand', level: 85, icon: '🐻', color: 'from-purple-500 to-purple-600' },
+    { name: 'NgRx', level: 80, icon: '📦', color: 'from-purple-600 to-purple-700' },
+    { name: 'Styled component', level: 80, icon: '💅', color: 'from-pink-500 to-pink-600' },
+    { name: 'Optimisation SEO', level: 86, icon: '🔍', color: 'from-green-500 to-green-600' }
+  ];
+
+  const backendSkills = [
+    { name: 'ExpressJs', level: 85, icon: '⚡', color: 'from-gray-700 to-gray-800' },
+    { name: 'Laravel', level: 80, icon: '🔺', color: 'from-red-500 to-red-600' },
+    { name: 'NestJs', level: 75, icon: '🐱', color: 'from-red-600 to-pink-600' },
+    { name: 'Dotnet', level: 75, icon: '🔷', color: 'from-purple-600 to-purple-700' },
+    { name: 'FastApi', level: 70, icon: '⚡', color: 'from-teal-500 to-teal-600' },
+    { name: 'Sql Server', level: 70, icon: '🗄️', color: 'from-gray-600 to-gray-700' },
+    { name: 'Postgres', level: 70, icon: '🐘', color: 'from-blue-600 to-blue-700' },
+    { name: 'Qdrant', level: 70, icon: '🔴', color: 'from-pink-600 to-red-600' },
+    { name: 'Redis', level: 60, icon: '🔴', color: 'from-red-700 to-red-800' }
+  ];
+
+  const designTools = [
+    { name: 'AdobeXD', level: 95, icon: '🎨', color: 'from-pink-600 to-purple-600' },
+    { name: 'Figma', level: 90, icon: '🎯', color: 'from-purple-500 to-pink-500' },
+    { name: 'Adobe Photoshop', level: 80, icon: '🖼️', color: 'from-blue-600 to-blue-700' },
+    { name: 'Adobe Illustrator', level: 60, icon: '🎨', color: 'from-orange-600 to-orange-700' }
+  ];
+
+  const devTools = [
+    { name: 'Git hub', level: 98, icon: '🐙', color: 'from-gray-800 to-black' },
+    { name: 'Git lab', level: 95, icon: '🦊', color: 'from-orange-600 to-red-600' },
+    { name: 'Jira', level: 90, icon: '📊', color: 'from-blue-600 to-blue-700' },
+    { name: 'Jest', level: 80, icon: '🃏', color: 'from-red-700 to-red-800' },
+    { name: 'LangChain', level: 70, icon: '🔗', color: 'from-green-600 to-green-700' },
+    { name: 'LLM', level: 70, icon: '🤖', color: 'from-blue-500 to-blue-600' },
+    { name: 'Docker', level: 60, icon: '🐋', color: 'from-blue-600 to-blue-700' }
+  ];
+
+  const SkillCard = ({ skill, index }: { skill: Skill; index: number }) => (
+    <div
+      onMouseEnter={() => setHoveredCard(`${skill.name}-${index}`)}
+      onMouseLeave={() => setHoveredCard(null)}
+      className="relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-2 md:p-5 border border-gray-700 hover:border-yellow-500 transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-yellow-500/20"
+    >
+      <div className="flex items-center justify-between mb-2 md:mb-3">
+        <span className="text-lg md:text-2xl">{skill.icon}</span>
+        <span className="text-white font-semibold text-sm md:text-lg">{skill.level}%</span>
+      </div>
+      <h3 className="text-white font-bold text-xs md:text-base mb-2 md:mb-3 leading-tight">{skill.name}</h3>
+      <div className="w-full bg-gray-700 rounded-full h-1 md:h-1.5 overflow-hidden">
+        <div
+          className={`h-full bg-gradient-to-r transition-all duration-500 rounded-full ${
+            hoveredCard !== null 
+              ? 'from-yellow-400 to-yellow-500' 
+              : skill.color
+          }`}
+          style={{
+            width: hoveredCard === `${skill.name}-${index}` ? `${skill.level}%` : '0%'
+          }}
+        />
+      </div>
+    </div>
+  );
+
+  const SectionTitle = ({ icon, title, subtitle }: { icon: string; title: string; subtitle?: string }) => (
+    <div className="flex items-start gap-4 mb-8">
+      <div className="text-white text-3xl">{icon}</div>
+      <div>
+        <h2 className="text-white text-2xl font-bold">{title}</h2>
+        {subtitle && <h3 className="text-gray-400 text-lg">{subtitle}</h3>}
+      </div>
+    </div>
+  );
+
+  const InfoBox = ({ title, description }: { title: string; description: string }) => (
+    <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-6 border border-gray-700">
+      <h3 className="text-white text-xl font-bold mb-3">{title}</h3>
+      <p className="text-gray-300 leading-relaxed text-sm">{description}</p>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
+      {/* Animated Circuit Background */}
+      <div className="absolute inset-0 opacity-20 pointer-events-none">
+        <svg className="w-full h-full">
+          {circuits.map((circuit) => (
+            <g key={circuit.id}>
+              {circuit.type === 0 && (
+                <g
+                  className={`transition-all duration-1000 ${
+                    hoveredCard ? 'animate-pulse' : ''
+                  }`}
+                  style={{
+                    transform: `translate(${circuit.x}%, ${circuit.y}%) rotate(${circuit.rotation}deg)`
+                  }}
+                >
+                  <line
+                    x1="0"
+                    y1="0"
+                    x2={circuit.width}
+                    y2="0"
+                    stroke="#fbbf24"
+                    strokeWidth="2"
+                    className="animate-pulse"
+                  />
+                  <circle cx={circuit.width} cy="0" r="4" fill="#fbbf24" />
+                </g>
+              )}
+              {circuit.type === 1 && (
+                <g
+                  className={`transition-all duration-1000 ${
+                    hoveredCard ? 'animate-pulse' : ''
+                  }`}
+                  style={{
+                    transform: `translate(${circuit.x}%, ${circuit.y}%) rotate(${circuit.rotation}deg)`
+                  }}
+                >
+                  <path
+                    d={`M 0 0 L ${circuit.width / 2} 0 L ${circuit.width / 2} ${circuit.width / 2} L ${circuit.width} ${circuit.width / 2}`}
+                    stroke="#fbbf24"
+                    strokeWidth="2"
+                    fill="none"
+                  />
+                  <rect
+                    x={circuit.width - 8}
+                    y={circuit.width / 2 - 8}
+                    width="16"
+                    height="16"
+                    fill="#fbbf24"
+                  />
+                </g>
+              )}
+              {circuit.type === 2 && (
+                <g
+                  className={`transition-all duration-1000 ${
+                    hoveredCard ? 'animate-pulse' : ''
+                  }`}
+                  style={{
+                    transform: `translate(${circuit.x}%, ${circuit.y}%) rotate(${circuit.rotation}deg)`
+                  }}
+                >
+                  <circle cx="0" cy="0" r="6" fill="#fbbf24" />
+                  <line
+                    x1="6"
+                    y1="0"
+                    x2={circuit.width}
+                    y2="0"
+                    stroke="#fbbf24"
+                    strokeWidth="2"
+                  />
+                </g>
+              )}
+            </g>
+          ))}
+        </svg>
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-6 py-12">
+        {/* Header */}
+        <h1 className="text-white text-4xl font-bold mb-12">
+          Technologies <span className="text-yellow-500">détails</span>
+        </h1>
+
+        {/* Frontend Section */}
+        <div className="grid lg:grid-cols-3 gap-8 mb-16">
+          <div className="lg:col-span-2">
+            <SectionTitle icon="</>" title="Frontend" subtitle="" />
+            <div className="grid grid-cols-3 gap-2 md:gap-4">
+              {frontendSkills.map((skill, index) => (
+                <SkillCard key={skill.name} skill={skill} index={index} />
+              ))}
+            </div>
+          </div>
+          <div>
+            <InfoBox
+              title="Frontend"
+              description="Le frontend désigne la partie d'une Site Web ou d'une application avec laquelle les utilisateurs interagissent directement. Il inclut l'interface utilisateur(UI) et est développé à l'aide de technologies web comme HTML, CSS et JavaScript, souvent complétées par des Frameworks et bibliothèques tels que React, Next et Angular."
+            />
+          </div>
+        </div>
+
+        {/* Backend Section */}
+        <div className="grid lg:grid-cols-3 gap-8 mb-16">
+          <div className="lg:col-span-2">
+            <SectionTitle icon="</>" title="Backend et" subtitle="base de donnée" />
+            <div className="grid grid-cols-3 gap-2 md:gap-4">
+              {backendSkills.map((skill, index) => (
+                <SkillCard key={skill.name} skill={skill} index={index} />
+              ))}
+            </div>
+          </div>
+          <div>
+            <InfoBox
+              title="Backend et base de donnée"
+              description="Le backend gère la logique métier, les requêtes utilisateurs et les bases de données. NodeJs basé sur Javascript permet des applications serveur évolutives. Express simplifie le routage et le middleware, tandis que Nest offre une approche structuré pour les projet complexes."
+            />
+          </div>
+        </div>
+
+        {/* Design Tools Section */}
+        <div className="grid lg:grid-cols-3 gap-8 mb-16">
+          <div className="lg:col-span-2">
+            <SectionTitle icon="✏️" title="Outils de" subtitle="design" />
+            <div className="grid grid-cols-3 gap-2 md:gap-4">
+              {designTools.map((skill, index) => (
+                <SkillCard key={skill.name} skill={skill} index={index} />
+              ))}
+            </div>
+          </div>
+          <div>
+            <InfoBox
+              title="Outils de design"
+              description="Les outils de design sont logiciels permettant de créer de prototype et visualiser des interfaces UI / UX, des graphismes et des mises en pages."
+            />
+          </div>
+        </div>
+
+        {/* Dev Tools Section */}
+        <div className="grid lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <SectionTitle icon="🔧" title="Test unitaire" subtitle="et Outils" />
+            <div className="grid grid-cols-3 gap-2 md:gap-4">
+              {devTools.map((skill, index) => (
+                <SkillCard key={skill.name} skill={skill} index={index} />
+              ))}
+            </div>
+          </div>
+          <div>
+            <InfoBox
+              title="Test unitaire et Outils"
+              description="Les tests unitaires garantissent la fiabilité du code en détectant les bugs. Outils comme git est un system de gestion de version, suivi les modifications, permet le branching, le merging et facilite la collaboration, assurant une version une gestion efficace historique de la code."
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TechSkills;
