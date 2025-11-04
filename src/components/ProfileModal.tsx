@@ -274,17 +274,31 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                   </div>
                 </div>
 
-                {/* Bouton Contacter */}
+                {/* Bouton Télécharger CV */}
                 <button
                   onClick={() => {
-                    const message = encodeURIComponent('Bonjour Sarobidy, J\'ai un projet pour vous ...');
-                    const whatsappUrl = `https://wa.me/261344653609?text=${message}`;
-                    window.open(whatsappUrl, '_blank');
-                    onClose();
+                    try {
+                      // Créer un lien temporaire pour télécharger le PDF
+                      const link = document.createElement('a');
+                      link.href = '/cv.pdf';
+                      link.download = 'CV_Sarobidy_Fifaliantsoa.pdf';
+                      // Ouvrir dans un nouvel onglet si le téléchargement échoue
+                      link.target = '_blank';
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                    } catch (error) {
+                      console.error('Erreur lors du téléchargement du CV:', error);
+                      // Fallback: ouvrir le PDF dans un nouvel onglet
+                      window.open('/cv.pdf', '_blank');
+                    }
                   }}
-                  className="w-full border border-yellow-400 hover:border-yellow-400 hover:bg-transparent hover:text-yellow-400 border-2 border-transparent text-yellow-400 font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
+                  className="w-full border-2 border-yellow-400 hover:border-3 cursor-pointer text-yellow-400 font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center space-x-2"
                 >
-                  {t('profile.contacter')}
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <span>{t('profile.telechargerCV') || 'Télécharger CV'}</span>
                 </button>
               </div>
             </div>

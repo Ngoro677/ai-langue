@@ -62,6 +62,7 @@ export const translations = {
       diplomes: "Diplômes et certifications",
       experiences: "Expériences",
       contacter: "Contacter",
+      telechargerCV: "Télécharger CV",
     },
     // Chatbot
     chatbot: {
@@ -136,6 +137,7 @@ export const translations = {
       diplomes: "Diplomas and certifications",
       experiences: "Experiences",
       contacter: "Contact",
+      telechargerCV: "Download CV",
     },
     // Chatbot
     chatbot: {
@@ -210,6 +212,7 @@ export const translations = {
       diplomes: "Diploma sy fanamarinana",
       experiences: "Traikefa",
       contacter: "Mifandraisa",
+      telechargerCV: "Ampidino ny CV",
     },
     // Chatbot
     chatbot: {
