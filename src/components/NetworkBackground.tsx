@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import gsap from 'gsap';
 
 interface Node {
@@ -40,6 +40,65 @@ export default function NetworkBackground({
   const animationRef = useRef<number | null>(null);
   const mouseRef = useRef({ x: 0, y: 0 });
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+  // Mettre à jour les connexions
+  const updateConnections = useCallback(() => {
+    if (!svgRef.current) return;
+
+    const connectionsContainer = svgRef.current.querySelector('.connections-container') as SVGGElement;
+    if (!connectionsContainer) return;
+
+    const nodes = nodesRef.current;
+    const mouse = mouseRef.current;
+
+    // Nettoyer les anciennes connexions
+    connectionsContainer.innerHTML = '';
+
+    // Créer des connexions entre les nodes proches
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const dx = nodes[i].x - nodes[j].x;
+        const dy = nodes[i].y - nodes[j].y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < connectionDistance) {
+          // Créer la ligne
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', nodes[i].x.toString());
+          line.setAttribute('y1', nodes[i].y.toString());
+          line.setAttribute('x2', nodes[j].x.toString());
+          line.setAttribute('y2', nodes[j].y.toString());
+          line.setAttribute('stroke', color);
+          line.setAttribute('stroke-width', '1');
+          const opacity = 0.3 * (1 - distance / connectionDistance);
+          line.setAttribute('opacity', opacity.toString());
+          line.classList.add('connection');
+
+          connectionsContainer.appendChild(line);
+        }
+      }
+
+      // Connexion avec la souris si proche
+      const dx = nodes[i].x - mouse.x;
+      const dy = nodes[i].y - mouse.y;
+      const mouseDistance = Math.sqrt(dx * dx + dy * dy);
+
+      if (mouseDistance < connectionDistance * 1.5 && mouse.x > 0 && mouse.y > 0) {
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', nodes[i].x.toString());
+        line.setAttribute('y1', nodes[i].y.toString());
+        line.setAttribute('x2', mouse.x.toString());
+        line.setAttribute('y2', mouse.y.toString());
+        line.setAttribute('stroke', color);
+        line.setAttribute('stroke-width', '1.5');
+        const mouseOpacity = 0.4 * (1 - mouseDistance / (connectionDistance * 1.5));
+        line.setAttribute('opacity', mouseOpacity.toString());
+        line.classList.add('connection', 'mouse-connection');
+
+        connectionsContainer.appendChild(line);
+      }
+    }
+  }, [connectionDistance, color]);
 
   // Initialiser les dimensions et les nodes
   useEffect(() => {
@@ -151,66 +210,7 @@ export default function NetworkBackground({
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [dimensions, nodeCount, nodeColor]);
-
-  // Mettre à jour les connexions
-  const updateConnections = () => {
-    if (!svgRef.current) return;
-
-    const connectionsContainer = svgRef.current.querySelector('.connections-container') as SVGGElement;
-    if (!connectionsContainer) return;
-
-    const nodes = nodesRef.current;
-    const mouse = mouseRef.current;
-
-    // Nettoyer les anciennes connexions
-    connectionsContainer.innerHTML = '';
-
-    // Créer des connexions entre les nodes proches
-    for (let i = 0; i < nodes.length; i++) {
-      for (let j = i + 1; j < nodes.length; j++) {
-        const dx = nodes[i].x - nodes[j].x;
-        const dy = nodes[i].y - nodes[j].y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance < connectionDistance) {
-          // Créer la ligne
-          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-          line.setAttribute('x1', nodes[i].x.toString());
-          line.setAttribute('y1', nodes[i].y.toString());
-          line.setAttribute('x2', nodes[j].x.toString());
-          line.setAttribute('y2', nodes[j].y.toString());
-          line.setAttribute('stroke', color);
-          line.setAttribute('stroke-width', '1');
-          const opacity = 0.3 * (1 - distance / connectionDistance);
-          line.setAttribute('opacity', opacity.toString());
-          line.classList.add('connection');
-
-          connectionsContainer.appendChild(line);
-        }
-      }
-
-      // Connexion avec la souris si proche
-      const dx = nodes[i].x - mouse.x;
-      const dy = nodes[i].y - mouse.y;
-      const mouseDistance = Math.sqrt(dx * dx + dy * dy);
-
-      if (mouseDistance < connectionDistance * 1.5 && mouse.x > 0 && mouse.y > 0) {
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1', nodes[i].x.toString());
-        line.setAttribute('y1', nodes[i].y.toString());
-        line.setAttribute('x2', mouse.x.toString());
-        line.setAttribute('y2', mouse.y.toString());
-        line.setAttribute('stroke', color);
-        line.setAttribute('stroke-width', '1.5');
-        const mouseOpacity = 0.4 * (1 - mouseDistance / (connectionDistance * 1.5));
-        line.setAttribute('opacity', mouseOpacity.toString());
-        line.classList.add('connection', 'mouse-connection');
-
-        connectionsContainer.appendChild(line);
-      }
-    }
-  };
+  }, [dimensions, nodeCount, nodeColor, updateConnections]);
 
   // Gérer le mouvement de la souris
   useEffect(() => {

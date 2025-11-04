@@ -150,7 +150,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
-                          target.src = '/images/profile.png';
+                          target.src = '/images/bidy.png';
                         }}
                       />
                     </div>
