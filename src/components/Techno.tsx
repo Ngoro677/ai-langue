@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import NetworkBackground from './NetworkBackground';
 
 interface Circuit {
   id: number;
@@ -43,8 +44,7 @@ export default function TechSkills() {
   // Liste complète des technologies avec leurs icônes
   const technologies: Technology[] = [
     { name: "Laravel", icon: "https://cdn.simpleicons.org/laravel/FF2D20" },
-    { name: "Express", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg" },
-    { name: "React", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" },
+   { name: "React", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" },
     { name: "Angular", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/angularjs/angularjs-original.svg" },
     { name: "Node.js", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" },
     { name: "JavaScript", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" },
@@ -55,16 +55,12 @@ export default function TechSkills() {
     { name: "n8n", icon: "https://cdn.simpleicons.org/n8n/EF4444" },
     { name: ".NET", icon: "https://cdn.simpleicons.org/dotnet/512BD4" },
     { name: "SQL Server", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/microsoftsqlserver/microsoftsqlserver-plain.svg" },
-    { name: "Azure", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg" },
     { name: "LangChain", icon: "https://cdn.simpleicons.org/langchain/1C3C3C" },
     { name: "LLM", icon: "https://cdn.simpleicons.org/openai/412991" },
-    { name: "Next.js", icon: "https://cdn.simpleicons.org/nextdotjs/000000" },
-    { name: "TypeScript", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" },
+   { name: "TypeScript", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" },
     { name: "Tailwind CSS", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-original.svg" },
     { name: "HTML5", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" },
     { name: "CSS3", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" },
-    { name: "NestJS", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nestjs/nestjs-plain.svg" },
-    { name: "GitHub", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" },
     { name: "GitLab", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/gitlab/gitlab-original.svg" },
     { name: "Redis", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redis/redis-original.svg" },
     { name: "Figma", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/figma/figma-original.svg" }
@@ -158,8 +154,16 @@ export default function TechSkills() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-8 relative overflow-hidden">
+      {/* Network Background Animation */}
+      <NetworkBackground 
+        nodeCount={45}
+        connectionDistance={160}
+        color="#fbbf24"
+        nodeColor="#faa81b6c"
+      />
+      
       {/* Animated Circuit Background */}
-      <div className="absolute inset-0 opacity-20 pointer-events-none">
+      <div className="absolute inset-0 opacity-20 pointer-events-none z-0">
         <svg className="w-full h-full">
           {circuits.map((circuit) => (
             <g key={circuit.id}>
@@ -233,12 +237,12 @@ export default function TechSkills() {
         </svg>
       </div>
 
-      <h1 className="text-white max-w-7xl mx-auto px-6 mt-12 text-3xl font-bold mb-12">
+      <h1 className="text-white max-w-7xl mx-auto px-6 mt-12 text-3xl font-bold mb-12 relative z-10">
           {t('techno.technologies')}
         </h1>
 
         {/* Scrolling Technologies Section */}
-        <div className="relative">
+        <div className="relative z-10">
           {/* Masque de dégradé aux bords pour effet fade */}
           <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-gray-900 via-gray-900/80 to-transparent z-10 pointer-events-none"></div>
           <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-gray-900 via-gray-900/80 to-transparent z-10 pointer-events-none"></div>

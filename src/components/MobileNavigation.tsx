@@ -134,11 +134,11 @@ export default function MobileNavigation() {
                 }`}
                 aria-label={item.label}
               >
-                <span className={`transition-colors ${isActive ? 'text-gray-900' : 'text-gray-400'}`}>
+                <span className={`transition-colors ${isActive ? 'text-white' : 'text-gray-400'}`}>
                   {item.icon}
                 </span>
                 {isActive && (
-                  <span className="text-[10px] font-semibold text-gray-900 leading-tight">
+                  <span className="text-[10px] font-semibold text-white leading-tight">
                     {item.label}
                   </span>
                 )}

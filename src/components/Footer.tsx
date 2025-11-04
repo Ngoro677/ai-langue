@@ -1,13 +1,22 @@
 'use client';
 
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import NetworkBackground from './NetworkBackground';
 
 export default function Footer() {
   const { t } = useI18n();
 
   return (
-    <footer className="bg-gray-900 text-white py-12">
-      <div className="max-w-7xl mx-auto px-6">
+    <footer className="bg-gray-900 text-white py-12 relative overflow-hidden">
+      {/* Network Background Animation */}
+      <NetworkBackground 
+        nodeCount={40}
+        connectionDistance={150}
+        color="#fbbf24"
+        nodeColor="#faa81b6c"
+      />
+      
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
         {/* Top Section - Social Media & Contact */}
         <div className="text-center space-y-6 mb-8">
           {/* Social Media Icons */}
