@@ -63,7 +63,7 @@ export const useScrollReveal = (
 
     const ctx = gsap.context(() => {
       elements.forEach((el, index) => {
-        const fromProps: any = { opacity: 0 };
+        const fromProps: { opacity: number; x?: number; y?: number } = { opacity: 0 };
         
         if (direction === 'up') fromProps.y = 80;
         else if (direction === 'down') fromProps.y = -80;
