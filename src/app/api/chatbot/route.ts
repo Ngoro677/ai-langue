@@ -15,6 +15,31 @@ function normalizeText(text: string): string {
     .replace(/[^\w\s]/g, ' '); // Remplacer les caractères spéciaux par des espaces
 }
 
+// Créer des liens HTML cliquables vers les sections du portfolio
+function createSectionLink(text: string, sectionId: string, language: 'fr' | 'en' | 'mga' = 'fr'): string {
+  const sectionLabels = {
+    fr: {
+      projet: 'section Projets',
+      techno: 'section Technologies',
+      accueil: 'section Accueil',
+    },
+    en: {
+      projet: 'Projects section',
+      techno: 'Technologies section',
+      accueil: 'Home section',
+    },
+    mga: {
+      projet: 'fizarana Tetikasa',
+      techno: 'fizarana Teknologia',
+      accueil: 'fizarana Fandraisana',
+    },
+  };
+  
+  const label = sectionLabels[language][sectionId as keyof typeof sectionLabels.fr] || text;
+  // Utiliser un data attribute pour identifier la section et permettre à React de gérer le clic
+  return `<a href="#${sectionId}" data-section-id="${sectionId}" class="section-link text-yellow-400 hover:text-yellow-300 underline font-semibold cursor-pointer transition-colors">${text}</a>`;
+}
+
 // Nettoyer les réponses pour supprimer les markdown et formater proprement
 function cleanResponse(response: string): string {
   return response
@@ -40,11 +65,11 @@ function detectLanguage(text: string): 'fr' | 'en' | 'mga' {
   const normalized = normalizeText(text);
   
   // Mots-clés malgaches
-  const mgaKeywords = ['ahoana', 'inona', 'iza', 'aiza', 'firy', 'manao', 'tena', 'tsara', 'mazoto', 'afaka', 'miarahaba', 'miala', 'azafady', 'misaotra'];
+  const mgaKeywords = ['ahoana', 'inona', 'iza', 'aiza', 'firy', 'manao', 'tena', 'tsara', 'mazoto', 'afaka', 'miarahaba', 'miala', 'azafady', 'misaotra', 'manambady', 've', 'izy'];
   // Mots-clés anglais
-  const enKeywords = ['what', 'how', 'where', 'when', 'why', 'who', 'can', 'do', 'does', 'is', 'are', 'hello', 'hi', 'skill', 'skills', 'capable', 'good', 'expert'];
+  const enKeywords = ['what', 'how', 'where', 'when', 'why', 'who', 'can', 'do', 'does', 'is', 'are', 'hello', 'hi', 'skill', 'skills', 'capable', 'good', 'expert', 'married', 'wife', 'husband'];
   // Mots-clés français
-  const frKeywords = ['bonjour', 'salut', 'comment', 'quoi', 'qui', 'où', 'quand', 'pourquoi', 'peux', 'peut', 'est', 'sont', 'compétence', 'capacité', 'doué', 'capable'];
+  const frKeywords = ['bonjour', 'salut', 'comment', 'quoi', 'qui', 'où', 'quand', 'pourquoi', 'peux', 'peut', 'est', 'sont', 'compétence', 'capacité', 'doué', 'capable', 'marié', 'mariée'];
   
   const mgaScore = mgaKeywords.filter(kw => normalized.includes(kw)).length;
   const enScore = enKeywords.filter(kw => normalized.includes(kw)).length;
@@ -65,67 +90,90 @@ function normalizeQuestion(question: string): string {
   const normalized = normalizeText(question);
   const originalLower = question.toLowerCase();
   
-  // Variantes de salutations
+  // PRIORITÉ 1: Détecter les questions personnelles/privées EN PREMIER
+  // Exclure les questions sur l'expérience professionnelle qui sont pertinentes
+  const isExperienceQuestion = normalized.match(/(experience|experiences|annee|annees|ans|years|traikefa|vraiment.*experience|vraiment.*ans)/i);
+  
+  // Patterns spécifiques malgaches pour mariage (vérifier AVANT la normalisation)
+  const isManambady = originalLower.includes('manambady');
+  
+  // Mots-clés personnels en français, anglais et malgache
+  const personalQuestions = [
+    // Mariage / État civil
+    'marie', 'mariee', 'married', 'marry', 'spouse', 'wife', 'husband', 'conjoint', 'conjointe',
+    // Enfants / Famille
+    'fils', 'fille', 'enfant', 'enfants', 'child', 'children', 'son', 'daughter', 'zaza', 'zanaka',
+    'anakavavy', 'anakalahy', // Malgache: fille, fils
+    // Âge
+    'age', 'âge', 'old', 'how old', 'taona', 'firy taona', // Malgache: quel âge
+    // Famille
+    'famille', 'family', 'parents', 'mere', 'pere', 'mother', 'father', 'ray', 'reny', // Malgache: père, mère
+    'havana', // Malgache: famille
+    // Adresse
+    'adresse', 'address', 'domicile', 'residence', 'toerana', 'toeram-ponenana',
+    // Salaire
+    'salaire', 'salary', 'revenu', 'income', 'karama',
+    // Hobbies
+    'hobby', 'loisir', 'passe-temps', 'passion personnelle', 'fialamboly'
+  ];
+  
+  // Détecter les questions personnelles
+  const isPersonalQuestion = isManambady || personalQuestions.some(keyword => {
+    return normalized.includes(keyword) || originalLower.includes(keyword);
+  });
+  
+  // Si c'est une question personnelle (sauf expérience professionnelle), retourner outOfScope
+  if (!isExperienceQuestion && isPersonalQuestion) {
+    return 'outOfScope';
+  }
+  
+  // PRIORITÉ 2: Variantes de salutations
   if (normalized.match(/^(bonjour|salut|hello|hi|miarahaba|manao ahoana)/i)) {
     return 'bonjour';
   }
   
-  // Questions sur les compétences
+  // PRIORITÉ 3: Questions sur les projets web
+  if (normalized.match(/(projet web|projets web|ses projets|ses projet|show projects|montrer projet|voir projet|list projects|web projects)/i) ||
+      originalLower.includes('ses projets') || originalLower.includes('projets web') || originalLower.includes('projet web')) {
+    return 'projets';
+  }
+  
+  // PRIORITÉ 4: Questions sur les technologies
+  if (normalized.match(/(technologies|technologie|tech|outils|tools|techno|frameworks|langages|languages|stack)/i)) {
+    return 'technologies';
+  }
+  
+  // PRIORITÉ 5: Questions sur les compétences
   if (normalized.match(/(ses competence|ses competences|ses compétences|compétence|competence|skill|skills|fahaizana)/i) || 
       originalLower.includes('ses compétences') || originalLower.includes('ses competences')) {
     return 'competences';
   }
   
-  // Questions sur le langage de programmation
+  // PRIORITÉ 6: Questions sur le langage de programmation
   if (normalized.match(/(plus fort|meilleur|langage|language|programmation|programming|langue de program|best language|strongest language|favorite language)/i)) {
     return 'language';
   }
   
-  // Questions sur l'expérience professionnelle (vraiment, exactement, etc.)
+  // PRIORITÉ 7: Questions sur l'expérience professionnelle (vraiment, exactement, etc.)
   if (normalized.match(/(vraiment.*experience|vraiment.*ans|vraiment.*annee|exactement.*experience|exactement.*ans|how many years|combien.*ans|combien.*annee)/i)) {
     return 'experience';
   }
   
-  // Questions frontend/backend
+  // PRIORITÉ 8: Questions frontend/backend
   if (normalized.match(/(backend ou frontend|frontend ou backend|backend|frontend|prefer|prefere|specialise|specialized|meilleur|better)/i)) {
     return 'frontendBackend';
   }
   
-  // Questions sur les capacités - amélioration pour détecter "Es t'il doué?", "Est-il doué?", "est ce qu'il est capable?", etc.
+  // PRIORITÉ 9: Questions sur les capacités - amélioration pour détecter "Es t'il doué?", "Est-il doué?", "est ce qu'il est capable?", etc.
   if (normalized.match(/(est ce qu.il est capable|peut il|capable de faire|capable de|doué en quoi|doué|bon en quoi|expert|expertise|what can he|what is he good at|skills|capabilities|est il dou|es t.il dou|est il bon|es t.il bon)/i) ||
       originalLower.includes('est ce qu\'il est capable') || originalLower.includes('est-ce qu\'il est capable') || 
       originalLower.includes('est ce qu il est capable') || originalLower.includes('est-ce qu il est capable')) {
     return 'capabilities';
   }
   
-  // Questions de suivi
+  // PRIORITÉ 10: Questions de suivi
   if (normalized.match(/^(et|and|ary)$/i)) {
     return 'followup';
-  }
-  
-  // Détecter les questions personnelles/privées en dehors du portfolio
-  // Exclure les questions sur l'expérience professionnelle qui sont pertinentes
-  const isExperienceQuestion = normalized.match(/(experience|experiences|annee|annees|ans|years|traikefa|vraiment.*experience|vraiment.*ans)/i);
-  
-  const personalQuestions = [
-    'marie', 'mariee', 'married', 'spouse', 'wife', 'husband', 'conjoint', 'conjointe',
-    'fils', 'fille', 'enfant', 'enfants', 'child', 'children', 'son', 'daughter', 'zaza', 'zanaka',
-    'age', 'âge', 'old', 'how old', 'taona', 'firy taona',
-    'famille', 'family', 'parents', 'mere', 'pere', 'mother', 'father', 'ray', 'reny',
-    'adresse', 'address', 'domicile', 'residence', 'toerana', 'toeram-ponenana',
-    'salaire', 'salary', 'revenu', 'income', 'karama',
-    'hobby', 'loisir', 'passe-temps', 'passion personnelle', 'fialamboly'
-  ];
-  
-  // Ne pas marquer comme hors scope si c'est une question sur l'expérience professionnelle
-  if (!isExperienceQuestion) {
-    const isPersonalQuestion = personalQuestions.some(keyword => 
-      normalized.includes(keyword) || originalLower.includes(keyword)
-    );
-    
-    if (isPersonalQuestion) {
-      return 'outOfScope';
-    }
   }
   
   return question;
@@ -297,6 +345,14 @@ const multilingualResponses = {
     competences: "Fifaliantsoa Sarobidy est un développeur fullstack avec plus de 4 ans d'expérience. Voici ses compétences principales :\n\n• Frontend : React, Next.js, Angular, TypeScript, Tailwind CSS, Zustand, NgRx\n• Backend : Node.js, NestJS\n• Bases de données : Redis, Qdrant\n• IA/ML : LangChain\n• Design : Figma, Adobe Illustrator, Adobe Photoshop, Adobe XD\n• Outils : Git, GitHub, GitLab, Jest, Jira, Microsoft Teams\n\nIl est spécialisé en JavaScript et TypeScript, avec une expertise en développement d'applications web modernes, design UI/UX, et intégration de systèmes IA.",
     capabilities: "Oui, il est très capable ! Fifaliantsoa Sarobidy est capable de :\n\n• Développer des applications web complètes (frontend et backend)\n• Créer des interfaces utilisateur modernes et responsives\n• Concevoir des maquettes et prototypes avec Figma et Adobe\n• Intégrer des systèmes d'intelligence artificielle (RAG, chatbots)\n• Optimiser les performances des applications\n• Développer des applications mobiles\n• Créer des dashboards et interfaces d'administration\n• Travailler en équipe avec des outils de collaboration\n• Gérer des projets de A à Z\n\nIl maîtrise React, Next.js, Angular, NestJS, TypeScript, et bien d'autres technologies.",
     language: "Fifaliantsoa Sarobidy est le plus fort en JavaScript et TypeScript. Il est spécialisé dans ces langages avec plus de 4 ans d'expérience. Il maîtrise également les frameworks modernes basés sur JavaScript comme React, Next.js, Angular, Node.js et NestJS.",
+    projets: (lang: 'fr' | 'en' | 'mga' = 'fr') => {
+      const link = createSectionLink('section Projets', 'projet', lang);
+      return `Voici les projets web réalisés par Fifaliantsoa Sarobidy :\n\n• Dashboard Ilodesk - Plateforme de gestion avec ReactJS, TypeScript, .NET, SQL Server\n• Ilodesk Platform - Solution complète avec ReactJS, TypeScript, Tailwind\n• Smart Dashboard - Dashboard intelligent avec ReactJS, NestJS, Stripe, Chart.js\n• Digitheque - Application Next.js avec Prisma et Tailwind\n• Portfolio - Site portfolio avec ReactJS, Framer Motion, GSAP\n• Ilomad Website - Site web avec Next.js, PHP, MySQL\n• Sarakodev - Plateforme avec Express, Next.js, PostgreSQL, AWS\n• Raitra - Application ReactJS avec Node.js et PostgreSQL\n• CA2E Platform - Plateforme Laravel avec React et MySQL\n• Congé Manager - Gestionnaire de congés avec ReactJS, Express, PostgreSQL\n• GTA Project - Projet Next.js avec Blender\n\nCliquez ici pour voir tous les projets : ${link}`;
+    },
+    technologies: (lang: 'fr' | 'en' | 'mga' = 'fr') => {
+      const link = createSectionLink('section Technologies', 'techno', lang);
+      return `Fifaliantsoa Sarobidy maîtrise les technologies suivantes :\n\n• Frontend : React, Next.js, Angular, TypeScript, Tailwind CSS, Zustand, NgRx\n• Backend : Node.js, NestJS, Express\n• Bases de données : Redis, Qdrant, PostgreSQL, MySQL, SQL Server\n• IA/ML : LangChain\n• Design : Figma, Adobe Illustrator, Adobe Photoshop, Adobe XD\n• Outils : Git, GitHub, GitLab, Jest, Jira, Microsoft Teams\n• Cloud : AWS\n• Autres : Docker, Stripe, Chart.js\n\nCliquez ici pour voir toutes les technologies : ${link}`;
+    },
     frontendBackend: "Fifaliantsoa Sarobidy est un développeur fullstack, ce qui signifie qu'il est compétent à la fois en frontend et en backend. Il excelle particulièrement en :\n\n• Frontend : React, Next.js, Angular avec TypeScript et Tailwind CSS\n• Backend : Node.js et NestJS\n\nIl a une solide expérience dans les deux domaines et peut développer des applications complètes de bout en bout.",
     experience: "Oui, c'est exact. Fifaliantsoa Sarobidy a plus de 4 ans d'expérience dans le développement web et mobile. Il a acquis cette expérience en travaillant sur divers projets professionnels, en développant des applications web complètes, des interfaces utilisateur modernes, et en intégrant des systèmes d'intelligence artificielle. Son expertise couvre le développement frontend et backend, ainsi que le design UI/UX.",
     outOfScope: "Désolé, cette question est en dehors du cadre de ce portfolio. Je peux uniquement répondre aux questions concernant les compétences professionnelles, les projets, l'expérience technique et les réalisations de Fifaliantsoa Sarobidy.\n\nN'hésitez pas à me poser des questions sur :\n• Ses compétences techniques\n• Ses projets réalisés\n• Son expérience professionnelle\n• Les technologies qu'il maîtrise\n• Comment le contacter professionnellement",
@@ -307,6 +363,14 @@ const multilingualResponses = {
     competences: "Fifaliantsoa Sarobidy is a fullstack developer with more than 4 years of experience. Here are his main skills:\n\n• Frontend: React, Next.js, Angular, TypeScript, Tailwind CSS, Zustand, NgRx\n• Backend: Node.js, NestJS\n• Databases: Redis, Qdrant\n• AI/ML: LangChain\n• Design: Figma, Adobe Illustrator, Adobe Photoshop, Adobe XD\n• Tools: Git, GitHub, GitLab, Jest, Jira, Microsoft Teams\n\nHe specializes in JavaScript and TypeScript, with expertise in modern web application development, UI/UX design, and AI system integration.",
     capabilities: "Yes, he is very capable! Fifaliantsoa Sarobidy is capable of:\n\n• Developing complete web applications (frontend and backend)\n• Creating modern and responsive user interfaces\n• Designing mockups and prototypes with Figma and Adobe\n• Integrating artificial intelligence systems (RAG, chatbots)\n• Optimizing application performance\n• Developing mobile applications\n• Creating dashboards and administration interfaces\n• Working in teams with collaboration tools\n• Managing projects from A to Z\n\nHe masters React, Next.js, Angular, NestJS, TypeScript, and many other technologies.",
     language: "Fifaliantsoa Sarobidy is strongest in JavaScript and TypeScript. He specializes in these languages with more than 4 years of experience. He also masters modern JavaScript-based frameworks like React, Next.js, Angular, Node.js, and NestJS.",
+    projets: (lang: 'fr' | 'en' | 'mga' = 'en') => {
+      const link = createSectionLink('Projects section', 'projet', lang);
+      return `Here are the web projects developed by Fifaliantsoa Sarobidy:\n\n• Dashboard Ilodesk - Management platform with ReactJS, TypeScript, .NET, SQL Server\n• Ilodesk Platform - Complete solution with ReactJS, TypeScript, Tailwind\n• Smart Dashboard - Smart dashboard with ReactJS, NestJS, Stripe, Chart.js\n• Digitheque - Next.js application with Prisma and Tailwind\n• Portfolio - Portfolio site with ReactJS, Framer Motion, GSAP\n• Ilomad Website - Website with Next.js, PHP, MySQL\n• Sarakodev - Platform with Express, Next.js, PostgreSQL, AWS\n• Raitra - ReactJS application with Node.js and PostgreSQL\n• CA2E Platform - Laravel platform with React and MySQL\n• Congé Manager - Leave manager with ReactJS, Express, PostgreSQL\n• GTA Project - Next.js project with Blender\n\nClick here to see all projects: ${link}`;
+    },
+    technologies: (lang: 'fr' | 'en' | 'mga' = 'en') => {
+      const link = createSectionLink('Technologies section', 'techno', lang);
+      return `Fifaliantsoa Sarobidy masters the following technologies:\n\n• Frontend: React, Next.js, Angular, TypeScript, Tailwind CSS, Zustand, NgRx\n• Backend: Node.js, NestJS, Express\n• Databases: Redis, Qdrant, PostgreSQL, MySQL, SQL Server\n• AI/ML: LangChain\n• Design: Figma, Adobe Illustrator, Adobe Photoshop, Adobe XD\n• Tools: Git, GitHub, GitLab, Jest, Jira, Microsoft Teams\n• Cloud: AWS\n• Others: Docker, Stripe, Chart.js\n\nClick here to see all technologies: ${link}`;
+    },
     frontendBackend: "Fifaliantsoa Sarobidy is a fullstack developer, meaning he is competent in both frontend and backend. He particularly excels in:\n\n• Frontend: React, Next.js, Angular with TypeScript and Tailwind CSS\n• Backend: Node.js and NestJS\n\nHe has solid experience in both domains and can develop complete end-to-end applications.",
     experience: "Yes, that's correct. Fifaliantsoa Sarobidy has more than 4 years of experience in web and mobile development. He has gained this experience by working on various professional projects, developing complete web applications, modern user interfaces, and integrating artificial intelligence systems. His expertise covers frontend and backend development, as well as UI/UX design.",
     outOfScope: "Sorry, this question is outside the scope of this portfolio. I can only answer questions about Fifaliantsoa Sarobidy's professional skills, projects, technical experience, and achievements.\n\nFeel free to ask me about:\n• His technical skills\n• His completed projects\n• His professional experience\n• The technologies he masters\n• How to contact him professionally",
@@ -317,6 +381,14 @@ const multilingualResponses = {
     competences: "Fifaliantsoa Sarobidy dia mpamorona fullstack miaraka amin'ny traikefa mihoatra ny 4 taona. Ity ny fahaizany fototra:\n\n• Frontend: React, Next.js, Angular, TypeScript, Tailwind CSS, Zustand, NgRx\n• Backend: Node.js, NestJS\n• Bazy angona: Redis, Qdrant\n• IA/ML: LangChain\n• Design: Figma, Adobe Illustrator, Adobe Photoshop, Adobe XD\n• Fitaovana: Git, GitHub, GitLab, Jest, Jira, Microsoft Teams\n\nManokana amin'ny JavaScript sy TypeScript izy, miaraka amin'ny fahaizana amin'ny fampandrosoana application web maoderina, design UI/UX, ary ny fampifandraisana rafitra IA.",
     capabilities: "Eny, tena afaka izy! Fifaliantsoa Sarobidy afaka:\n\n• Mamorona application web feno (frontend sy backend)\n• Mamorona interface mpampiasa maoderina sy responsive\n• Mamorona maquette sy prototype amin'ny Figma sy Adobe\n• Mampiditra rafitra IA (RAG, chatbots)\n• Manatsara ny performance amin'ny application\n• Mamorona application mobile\n• Mamorona dashboard sy interface fitantanana\n• Miara-miasa amin'ny fitaovana fiaraha-miasa\n• Mitantana tetikasa hatrany A ka Z\n\nMahay React, Next.js, Angular, NestJS, TypeScript, ary teknologia hafa maro.",
     language: "Fifaliantsoa Sarobidy dia matanjaka indrindra amin'ny JavaScript sy TypeScript. Manokana amin'ireo fiteny ireo izy miaraka amin'ny traikefa mihoatra ny 4 taona. Mahay koa ny frameworks maoderina miorina amin'ny JavaScript toy ny React, Next.js, Angular, Node.js, ary NestJS.",
+    projets: (lang: 'fr' | 'en' | 'mga' = 'mga') => {
+      const link = createSectionLink('fizarana Tetikasa', 'projet', lang);
+      return `Ireto ny tetikasa web namboarin'i Fifaliantsoa Sarobidy:\n\n• Dashboard Ilodesk - Platform fitantanana miaraka amin'ny ReactJS, TypeScript, .NET, SQL Server\n• Ilodesk Platform - Vahaolana feno miaraka amin'ny ReactJS, TypeScript, Tailwind\n• Smart Dashboard - Dashboard manan-tsaina miaraka amin'ny ReactJS, NestJS, Stripe, Chart.js\n• Digitheque - Application Next.js miaraka amin'ny Prisma sy Tailwind\n• Portfolio - Tranokala portfolio miaraka amin'ny ReactJS, Framer Motion, GSAP\n• Ilomad Website - Tranokala miaraka amin'ny Next.js, PHP, MySQL\n• Sarakodev - Platform miaraka amin'ny Express, Next.js, PostgreSQL, AWS\n• Raitra - Application ReactJS miaraka amin'ny Node.js sy PostgreSQL\n• CA2E Platform - Platform Laravel miaraka amin'ny React sy MySQL\n• Congé Manager - Mpitantana fialan-tsasatra miaraka amin'ny ReactJS, Express, PostgreSQL\n• GTA Project - Tetikasa Next.js miaraka amin'ny Blender\n\nTsindrio eto ho hitanao ny tetikasa rehetra: ${link}`;
+    },
+    technologies: (lang: 'fr' | 'en' | 'mga' = 'mga') => {
+      const link = createSectionLink('fizarana Teknologia', 'techno', lang);
+      return `Fifaliantsoa Sarobidy mahay ireo teknologia manaraka:\n\n• Frontend: React, Next.js, Angular, TypeScript, Tailwind CSS, Zustand, NgRx\n• Backend: Node.js, NestJS, Express\n• Bazy angona: Redis, Qdrant, PostgreSQL, MySQL, SQL Server\n• IA/ML: LangChain\n• Design: Figma, Adobe Illustrator, Adobe Photoshop, Adobe XD\n• Fitaovana: Git, GitHub, GitLab, Jest, Jira, Microsoft Teams\n• Cloud: AWS\n• Hafa: Docker, Stripe, Chart.js\n\nTsindrio eto ho hitanao ny teknologia rehetra: ${link}`;
+    },
     frontendBackend: "Fifaliantsoa Sarobidy dia mpamorona fullstack, izany hoe mahay amin'ny frontend sy backend. Matanjaka indrindra amin'ny:\n\n• Frontend: React, Next.js, Angular miaraka amin'ny TypeScript sy Tailwind CSS\n• Backend: Node.js sy NestJS\n\nManana traikefa mafy amin'ny sehatra roa izy ary afaka mamorona application feno hatrany A ka Z.",
     experience: "Eny, marina izany. Fifaliantsoa Sarobidy dia manana traikefa mihoatra ny 4 taona amin'ny fampandrosoana web sy mobile. Nahazo io traikefa io izy amin'ny alalan'ny fiasana amin'ny tetikasa ara-piasana samihafa, fampandrosoana application web feno, interface mpampiasa maoderina, ary fampifandraisana rafitra IA. Ny fahaizany dia ahitana fampandrosoana frontend sy backend, ary koa design UI/UX.",
     outOfScope: "Miala tsiny, io fanontaniana io dia ivelan'ny portfolio. Afaka mamaly fotsiny ny fanontaniana momba ny fahaizana ara-piasana, ny tetikasany, ny traikefany ara-teknika, ary ny zava-bitan'i Fifaliantsoa Sarobidy aho.\n\nAza miangana anontanio momba:\n• Ny fahaizany ara-teknika\n• Ny tetikasany vita\n• Ny traikefany ara-piasana\n• Ny teknologia izay mahay\n• Ny fomba mifandraisa aminy ara-piasana",
@@ -355,6 +427,20 @@ export async function POST(request: NextRequest) {
     }
     
     // Gérer les questions spécifiques avec réponses précises
+    if (normalizedQ === 'projets') {
+      const projetsResponse = multilingualResponses[responseLang].projets(responseLang);
+      return NextResponse.json({ 
+        response: projetsResponse 
+      });
+    }
+    
+    if (normalizedQ === 'technologies') {
+      const technologiesResponse = multilingualResponses[responseLang].technologies(responseLang);
+      return NextResponse.json({ 
+        response: technologiesResponse 
+      });
+    }
+    
     if (normalizedQ === 'competences') {
       const competencesResponse = cleanResponse(multilingualResponses[responseLang].competences);
       return NextResponse.json({ 
@@ -383,10 +469,11 @@ export async function POST(request: NextRequest) {
       });
     }
     
-    // Gérer les questions hors scope
+    // Gérer les questions hors scope - Vérifier AVANT les autres questions
     if (normalizedQ === 'outOfScope') {
+      const outOfScopeResponse = multilingualResponses[responseLang].outOfScope;
       return NextResponse.json({ 
-        response: multilingualResponses[responseLang].outOfScope 
+        response: outOfScopeResponse 
       });
     }
     
@@ -433,7 +520,7 @@ export async function POST(request: NextRequest) {
         en: 'Réponds TOUJOURS en anglais (English). Use professional and courteous language.',
         mga: 'Réponds TOUJOURS en malgache. Ampiasao ny fiteny malagasy, tsara sy mahalala fomba.',
       };
-      
+
       // Créer le prompt avec contexte RAG
       const prompt = ChatPromptTemplate.fromMessages([
         [

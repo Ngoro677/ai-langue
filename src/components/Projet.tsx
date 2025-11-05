@@ -509,7 +509,7 @@ export default function Projet() {
                                         }`}
                                         onMouseEnter={() => setHoveredProject(`ia-${index}`)}
                                         onMouseLeave={() => setHoveredProject(null)}
-                                    >
+                                    >                                   
                                         <img
                                             src={`/images/Capture/${project.image}`}
                                             alt={`Projet IA ${index + 1}`}
