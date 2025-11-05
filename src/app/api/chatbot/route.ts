@@ -46,9 +46,9 @@ function detectLanguage(text: string): 'fr' | 'en' | 'mga' {
   // Mots-clés français
   const frKeywords = ['bonjour', 'salut', 'comment', 'quoi', 'qui', 'où', 'quand', 'pourquoi', 'peux', 'peut', 'est', 'sont', 'compétence', 'capacité', 'doué', 'capable'];
   
-  let mgaScore = mgaKeywords.filter(kw => normalized.includes(kw)).length;
-  let enScore = enKeywords.filter(kw => normalized.includes(kw)).length;
-  let frScore = frKeywords.filter(kw => normalized.includes(kw)).length;
+  const mgaScore = mgaKeywords.filter(kw => normalized.includes(kw)).length;
+  const enScore = enKeywords.filter(kw => normalized.includes(kw)).length;
+  const frScore = frKeywords.filter(kw => normalized.includes(kw)).length;
   
   // Si la question commence par "et?" ou similaire, garder la langue précédente
   if (normalized.trim() === 'et' || normalized.trim() === 'and' || normalized.trim() === 'ary') {
