@@ -125,17 +125,62 @@ export default function Chatbot() {
     if (questionWords.length === 0) return text;
     
     // Créer une regex pour trouver les mots-clés (insensible à la casse)
+    // Exclure les mots dans les balises HTML pour ne pas casser les liens
     const keywordsPattern = questionWords
       .map(word => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
       .join('|');
     
-    const regex = new RegExp(`\\b(${keywordsPattern})\\b`, 'gi');
-    
-    // Remplacer les mots-clés par des spans avec surlignage jaune
-    return text.replace(regex, (match) => {
-      return `<span class="bg-yellow-400 text-gray-900 font-semibold px-1 rounded">${match}</span>`;
+    // Ne pas remplacer les mots dans les balises HTML
+    const parts = text.split(/(<[^>]+>)/);
+    const processedParts = parts.map((part) => {
+      // Si c'est une balise HTML, ne pas la modifier
+      if (part.startsWith('<')) return part;
+      
+      // Sinon, appliquer la mise en évidence
+      const regex = new RegExp(`\\b(${keywordsPattern})\\b`, 'gi');
+      return part.replace(regex, (match) => {
+        return `<span class="bg-yellow-400 text-gray-900 font-semibold px-1 rounded">${match}</span>`;
+      });
     });
+    
+    return processedParts.join('');
   };
+
+  // Ajouter un gestionnaire d'événements pour les liens de section
+  useEffect(() => {
+    const handleSectionLinks = (e: Event) => {
+      const target = e.target as HTMLElement;
+      const link = target.closest('.section-link') as HTMLElement;
+      
+      if (link && link.classList.contains('section-link')) {
+        e.preventDefault();
+        e.stopPropagation();
+        const sectionId = link.getAttribute('data-section-id') || link.getAttribute('href')?.replace('#', '');
+        if (sectionId) {
+          const section = document.getElementById(sectionId);
+          if (section) {
+            const headerHeight = 100;
+            const sectionPosition = section.offsetTop - headerHeight;
+            window.scrollTo({
+              top: sectionPosition,
+              behavior: 'smooth'
+            });
+          }
+        }
+      }
+    };
+
+    // Utiliser la délégation d'événements pour les liens dynamiques
+    // Attacher au conteneur du chatbot pour éviter les conflits
+    const chatbotContainer = document.querySelector('[data-chatbot-container]');
+    const container = chatbotContainer || document;
+    
+    container.addEventListener('click', handleSectionLinks);
+    
+    return () => {
+      container.removeEventListener('click', handleSectionLinks);
+    };
+  }, []);
 
 
   return (
@@ -187,7 +232,7 @@ export default function Chatbot() {
             </div>
 
             {/* Zone de messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4" data-chatbot-container>
               {messages.map((message, index) => (
                 <div
                   key={index}
