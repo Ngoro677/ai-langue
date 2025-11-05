@@ -570,7 +570,7 @@ export default function Projet() {
 
             {/* Modal Popup */}
             {isModalOpen && selectedProject && (
-                <div className={`fixed inset-0 bg-gray-900/10 backdrop-blur-md flex items-center justify-center z-50 p-4 transition-all duration-300 ${
+                <div className={`fixed inset-0 backdrop-blur-[3px] flex items-center justify-center z-9999 p-4 transition-all duration-300 ${
                     isModalAnimating ? 'opacity-100' : 'opacity-0'
                 }`}
                 onClick={closeModal}

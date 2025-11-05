@@ -95,7 +95,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 bg-gray-900/10 backdrop-blur-md"
+            className="fixed inset-0 backdrop-blur-[3px]"
             style={{ 
               position: 'fixed',
               top: 0,

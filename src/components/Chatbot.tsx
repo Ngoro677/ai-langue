@@ -8,6 +8,7 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  userQuestion?: string; // Stocker la question de l'utilisateur pour la mise en évidence
 }
 
 export default function Chatbot() {
@@ -69,7 +70,10 @@ export default function Chatbot() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: userMessage.content }),
+        body: JSON.stringify({ 
+          message: userMessage.content,
+          language: language // Envoyer la langue actuelle
+        }),
       });
 
       if (!response.ok) {
@@ -82,6 +86,7 @@ export default function Chatbot() {
         role: 'assistant',
         content: data.response,
         timestamp: new Date(),
+        userQuestion: userMessage.content, // Stocker la question pour la mise en évidence
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
@@ -91,6 +96,7 @@ export default function Chatbot() {
         role: 'assistant',
         content: t('chatbot.erreur'),
         timestamp: new Date(),
+        userQuestion: userMessage.content,
       };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
@@ -105,17 +111,44 @@ export default function Chatbot() {
     }
   };
 
+  // Fonction pour mettre en évidence les mots-clés de la question dans la réponse
+  const highlightKeywords = (text: string, userQuestion: string): string => {
+    if (!userQuestion || !text) return text;
+    
+    // Extraire les mots-clés significatifs de la question (mots de 3+ caractères, excluant les mots vides)
+    const stopWords = ['est', 'il', 'est-il', 'es', 't\'il', 't\'il', 'le', 'la', 'les', 'un', 'une', 'des', 'de', 'du', 'et', 'ou', 'à', 'pour', 'avec', 'sans', 'sur', 'dans', 'par', 'is', 'he', 'she', 'it', 'the', 'a', 'an', 'and', 'or', 'to', 'for', 'with', 'in', 'on', 'at'];
+    const questionWords = userQuestion
+      .toLowerCase()
+      .split(/[\s\?\!\.]+/)
+      .filter(word => word.length >= 3 && !stopWords.includes(word.toLowerCase()));
+    
+    if (questionWords.length === 0) return text;
+    
+    // Créer une regex pour trouver les mots-clés (insensible à la casse)
+    const keywordsPattern = questionWords
+      .map(word => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+      .join('|');
+    
+    const regex = new RegExp(`\\b(${keywordsPattern})\\b`, 'gi');
+    
+    // Remplacer les mots-clés par des spans avec surlignage jaune
+    return text.replace(regex, (match) => {
+      return `<span class="bg-yellow-400 text-gray-900 font-semibold px-1 rounded">${match}</span>`;
+    });
+  };
+
+
   return (
     <>
       {/* Bouton d'ouverture du chatbot */}
-      <div className="fixed cursor-pointer z-50 sm:bottom-12 bottom-26 sm:left-12 left-3">
+      <div className="fixed cursor-pointer z-[9999] sm:bottom-12 bottom-26 sm:left-12 left-3">
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="w-12 h-12 cursor-pointer flex items-center justify-center rounded-full bg-gray-900/80 backdrop-blur-sm border-2 border-white hover:border-yellow-400 shadow-lg transition-all duration-300 hover:scale-110 group relative overflow-visible"
           aria-label="Ouvrir le chatbot"
         >
           {/* Tooltip */}
-          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs font-semibold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-300 z-[60] shadow-lg border border-gray-700">
+          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs font-semibold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-300 z-[10000] shadow-lg border border-gray-700">
             {t('chatbot.tooltip')}
             {/* Flèche du tooltip */}
             <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
@@ -134,7 +167,7 @@ export default function Chatbot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed z-50 sm:bottom-24 bottom-16 sm:left-12 left-3 w-[calc(100vw-1.5rem)] sm:w-96 h-[500px] bg-gray-900/95 backdrop-blur-lg border-2 border-gray-700 rounded-lg shadow-2xl flex flex-col overflow-hidden"
+            className="fixed z-[9999] sm:bottom-24 bottom-16 sm:left-12 left-3 w-[calc(100vw-1.5rem)] sm:w-96 h-[500px] bg-gray-900/95 backdrop-blur-lg border-2 border-gray-700 rounded-lg shadow-2xl flex flex-col overflow-hidden"
           >
             {/* En-tête */}
             <div className="bg-gray-800/90 px-4 py-3 flex items-center justify-between border-b border-gray-700">
@@ -167,7 +200,16 @@ export default function Chatbot() {
                         : 'bg-gray-800 text-white'
                     }`}
                   >
-                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    {message.role === 'assistant' ? (
+                      <p 
+                        className="text-sm whitespace-pre-wrap"
+                        dangerouslySetInnerHTML={{ 
+                          __html: highlightKeywords(message.content, message.userQuestion || '')
+                        }}
+                      />
+                    ) : (
+                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    )}
                   </div>
                 </div>
               ))}

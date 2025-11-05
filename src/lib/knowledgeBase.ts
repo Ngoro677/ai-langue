@@ -21,6 +21,18 @@ export const portfolioKnowledge = `
 - Gestion de projet: Jira
 - Communication: Microsoft Teams
 
+## Capacités et Savoir-faire
+Il est capable de:
+- Développer des applications web complètes (frontend et backend)
+- Créer des interfaces utilisateur modernes et responsives
+- Concevoir des maquettes et prototypes avec Figma et Adobe
+- Intégrer des systèmes d'intelligence artificielle (RAG, chatbots)
+- Optimiser les performances des applications
+- Travailler en équipe avec des outils de collaboration
+- Gérer des projets de A à Z
+- Développer des applications mobiles
+- Créer des dashboards et interfaces d'administration
+
 ## Technologies Maîtrisées
 - Frontend: React, Next.js, Angular, TypeScript, Tailwind CSS, Zustand, NgRx
 - Backend: Node.js, NestJS

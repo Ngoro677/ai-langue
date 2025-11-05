@@ -15,6 +15,9 @@ body {
   background: rgb(37, 37, 37);
 }
 
+.tset{
+  color: rgba(24, 22, 22, 0.308);
+}
 
 /* Custom colors are now defined in tailwind.config.js */
 
