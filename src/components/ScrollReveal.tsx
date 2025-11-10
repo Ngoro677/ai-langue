@@ -39,8 +39,8 @@ export default function ScrollReveal({
 
     const element = ref.current;
     const ctx = gsap.context(() => {
-      let fromProps: gsap.TweenVars = { opacity: 0 };
-      let toProps: gsap.TweenVars = { opacity: 1, duration, delay };
+      const fromProps: gsap.TweenVars = { opacity: 0 };
+      const toProps: gsap.TweenVars = { opacity: 1, duration, delay };
 
       switch (direction) {
         case 'up':
