@@ -35,7 +35,6 @@ function createSectionLink(text: string, sectionId: string, language: 'fr' | 'en
     },
   };
   
-  const label = sectionLabels[language][sectionId as keyof typeof sectionLabels.fr] || text;
   // Utiliser un data attribute pour identifier la section et permettre à React de gérer le clic
   return `<a href="#${sectionId}" data-section-id="${sectionId}" class="section-link text-yellow-400 hover:text-yellow-300 underline font-semibold cursor-pointer transition-colors">${text}</a>`;
 }
