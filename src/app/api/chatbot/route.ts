@@ -85,45 +85,79 @@ function detectLanguage(text: string): 'fr' | 'en' | 'mga' {
   return 'fr';
 }
 
+// Vérifier si une question est hors du scope du portfolio
+function isOutOfScope(question: string): boolean {
+  const normalized = normalizeText(question);
+  const originalLower = question.toLowerCase();
+  
+  // Exclure les questions sur l'expérience professionnelle qui sont pertinentes
+  const isExperienceQuestion = normalized.match(/(experience|experiences|annee|annees|ans|years|traikefa|vraiment.*experience|vraiment.*ans|combien.*ans|how many years)/i);
+  
+  // Patterns spécifiques malgaches pour mariage
+  const isManambady = originalLower.includes('manambady');
+  
+  // Mots-clés personnels/privés en français, anglais et malgache
+  const personalKeywords = [
+    // Mariage / État civil
+    'marie', 'mariee', 'married', 'marry', 'spouse', 'wife', 'husband', 'conjoint', 'conjointe',
+    // Enfants / Famille
+    'fils', 'fille', 'enfant', 'enfants', 'child', 'children', 'son', 'daughter', 'zaza', 'zanaka',
+    'anakavavy', 'anakalahy',
+    // Âge
+    'age', 'âge', 'old', 'how old', 'taona', 'firy taona',
+    // Famille
+    'famille', 'family', 'parents', 'mere', 'pere', 'mother', 'father', 'ray', 'reny', 'havana',
+    // Adresse personnelle
+    'adresse', 'address', 'domicile', 'residence', 'toerana', 'toeram-ponenana',
+    // Salaire / Finances
+    'salaire', 'salary', 'revenu', 'income', 'karama', 'combien.*gagne', 'how much.*earn',
+    // Hobbies personnels
+    'hobby', 'loisir', 'passe-temps', 'passion personnelle', 'fialamboly',
+    // Questions générales non liées au portfolio
+    'météo', 'weather', 'actualité', 'news', 'politique', 'sport', 'cuisine', 'recette',
+    'film', 'movie', 'musique', 'music', 'livre', 'book'
+  ];
+  
+  // Détecter les questions personnelles
+  const isPersonalQuestion = isManambady || personalKeywords.some(keyword => {
+    const regex = new RegExp(keyword.replace(/\*/g, '.*'), 'i');
+    return regex.test(normalized) || regex.test(originalLower);
+  });
+  
+  // Si c'est une question personnelle (sauf expérience professionnelle), c'est hors scope
+  if (!isExperienceQuestion && isPersonalQuestion) {
+    return true;
+  }
+  
+  // Détecter les questions complètement hors sujet (pas de mots-clés liés au portfolio)
+  const portfolioKeywords = [
+    'projet', 'project', 'competence', 'skill', 'technologie', 'technology', 'tech',
+    'experience', 'expérience', 'portfolio', 'sarobidy', 'fifaliantsoa',
+    'developpeur', 'developer', 'developpement', 'development', 'code', 'programmation',
+    'react', 'next', 'angular', 'node', 'javascript', 'typescript', 'frontend', 'backend',
+    'fullstack', 'full-stack', 'design', 'ui', 'ux', 'figma', 'adobe',
+    'contact', 'email', 'telephone', 'phone', 'contacter', 'reach'
+  ];
+  
+  const hasPortfolioKeyword = portfolioKeywords.some(keyword => 
+    normalized.includes(keyword) || originalLower.includes(keyword)
+  );
+  
+  // Si la question est très courte et ne contient aucun mot-clé du portfolio, probablement hors scope
+  if (question.trim().length < 10 && !hasPortfolioKeyword) {
+    return true;
+  }
+  
+  return false;
+}
+
 // Normaliser les questions pour une meilleure compréhension
 function normalizeQuestion(question: string): string {
   const normalized = normalizeText(question);
   const originalLower = question.toLowerCase();
   
-  // PRIORITÉ 1: Détecter les questions personnelles/privées EN PREMIER
-  // Exclure les questions sur l'expérience professionnelle qui sont pertinentes
-  const isExperienceQuestion = normalized.match(/(experience|experiences|annee|annees|ans|years|traikefa|vraiment.*experience|vraiment.*ans)/i);
-  
-  // Patterns spécifiques malgaches pour mariage (vérifier AVANT la normalisation)
-  const isManambady = originalLower.includes('manambady');
-  
-  // Mots-clés personnels en français, anglais et malgache
-  const personalQuestions = [
-    // Mariage / État civil
-    'marie', 'mariee', 'married', 'marry', 'spouse', 'wife', 'husband', 'conjoint', 'conjointe',
-    // Enfants / Famille
-    'fils', 'fille', 'enfant', 'enfants', 'child', 'children', 'son', 'daughter', 'zaza', 'zanaka',
-    'anakavavy', 'anakalahy', // Malgache: fille, fils
-    // Âge
-    'age', 'âge', 'old', 'how old', 'taona', 'firy taona', // Malgache: quel âge
-    // Famille
-    'famille', 'family', 'parents', 'mere', 'pere', 'mother', 'father', 'ray', 'reny', // Malgache: père, mère
-    'havana', // Malgache: famille
-    // Adresse
-    'adresse', 'address', 'domicile', 'residence', 'toerana', 'toeram-ponenana',
-    // Salaire
-    'salaire', 'salary', 'revenu', 'income', 'karama',
-    // Hobbies
-    'hobby', 'loisir', 'passe-temps', 'passion personnelle', 'fialamboly'
-  ];
-  
-  // Détecter les questions personnelles
-  const isPersonalQuestion = isManambady || personalQuestions.some(keyword => {
-    return normalized.includes(keyword) || originalLower.includes(keyword);
-  });
-  
-  // Si c'est une question personnelle (sauf expérience professionnelle), retourner outOfScope
-  if (!isExperienceQuestion && isPersonalQuestion) {
+  // Vérifier d'abord si c'est hors scope
+  if (isOutOfScope(question)) {
     return 'outOfScope';
   }
   
@@ -355,7 +389,7 @@ const multilingualResponses = {
     },
     frontendBackend: "Fifaliantsoa Sarobidy est un développeur fullstack, ce qui signifie qu'il est compétent à la fois en frontend et en backend. Il excelle particulièrement en :\n\n• Frontend : React, Next.js, Angular avec TypeScript et Tailwind CSS\n• Backend : Node.js et NestJS\n\nIl a une solide expérience dans les deux domaines et peut développer des applications complètes de bout en bout.",
     experience: "Oui, c'est exact. Fifaliantsoa Sarobidy a plus de 4 ans d'expérience dans le développement web et mobile. Il a acquis cette expérience en travaillant sur divers projets professionnels, en développant des applications web complètes, des interfaces utilisateur modernes, et en intégrant des systèmes d'intelligence artificielle. Son expertise couvre le développement frontend et backend, ainsi que le design UI/UX.",
-    outOfScope: "Désolé, cette question est en dehors du cadre de ce portfolio. Je peux uniquement répondre aux questions concernant les compétences professionnelles, les projets, l'expérience technique et les réalisations de Fifaliantsoa Sarobidy.\n\nN'hésitez pas à me poser des questions sur :\n• Ses compétences techniques\n• Ses projets réalisés\n• Son expérience professionnelle\n• Les technologies qu'il maîtrise\n• Comment le contacter professionnellement",
+    outOfScope: "Désolé, je ne peux répondre qu'aux questions concernant le portfolio professionnel de Fifaliantsoa Sarobidy.\n\nJe peux vous aider avec :\n• Ses compétences techniques et savoir-faire\n• Ses projets réalisés (web, mobile, IA)\n• Son expérience professionnelle\n• Les technologies qu'il maîtrise\n• Comment le contacter professionnellement\n\nPour toute autre question, je vous invite à consulter directement le portfolio ou à le contacter via les informations de contact disponibles.",
     followup: "Souhaitez-vous en savoir plus sur un point spécifique ? Posez-moi une question plus précise !",
   },
   en: {
@@ -373,7 +407,7 @@ const multilingualResponses = {
     },
     frontendBackend: "Fifaliantsoa Sarobidy is a fullstack developer, meaning he is competent in both frontend and backend. He particularly excels in:\n\n• Frontend: React, Next.js, Angular with TypeScript and Tailwind CSS\n• Backend: Node.js and NestJS\n\nHe has solid experience in both domains and can develop complete end-to-end applications.",
     experience: "Yes, that's correct. Fifaliantsoa Sarobidy has more than 4 years of experience in web and mobile development. He has gained this experience by working on various professional projects, developing complete web applications, modern user interfaces, and integrating artificial intelligence systems. His expertise covers frontend and backend development, as well as UI/UX design.",
-    outOfScope: "Sorry, this question is outside the scope of this portfolio. I can only answer questions about Fifaliantsoa Sarobidy's professional skills, projects, technical experience, and achievements.\n\nFeel free to ask me about:\n• His technical skills\n• His completed projects\n• His professional experience\n• The technologies he masters\n• How to contact him professionally",
+    outOfScope: "Sorry, I can only answer questions about Fifaliantsoa Sarobidy's professional portfolio.\n\nI can help you with:\n• His technical skills and capabilities\n• His completed projects (web, mobile, AI)\n• His professional experience\n• The technologies he masters\n• How to contact him professionally\n\nFor any other questions, I invite you to check the portfolio directly or contact him via the available contact information.",
     followup: "Would you like to know more about a specific point? Ask me a more specific question!",
   },
   mga: {
@@ -391,7 +425,7 @@ const multilingualResponses = {
     },
     frontendBackend: "Fifaliantsoa Sarobidy dia mpamorona fullstack, izany hoe mahay amin'ny frontend sy backend. Matanjaka indrindra amin'ny:\n\n• Frontend: React, Next.js, Angular miaraka amin'ny TypeScript sy Tailwind CSS\n• Backend: Node.js sy NestJS\n\nManana traikefa mafy amin'ny sehatra roa izy ary afaka mamorona application feno hatrany A ka Z.",
     experience: "Eny, marina izany. Fifaliantsoa Sarobidy dia manana traikefa mihoatra ny 4 taona amin'ny fampandrosoana web sy mobile. Nahazo io traikefa io izy amin'ny alalan'ny fiasana amin'ny tetikasa ara-piasana samihafa, fampandrosoana application web feno, interface mpampiasa maoderina, ary fampifandraisana rafitra IA. Ny fahaizany dia ahitana fampandrosoana frontend sy backend, ary koa design UI/UX.",
-    outOfScope: "Miala tsiny, io fanontaniana io dia ivelan'ny portfolio. Afaka mamaly fotsiny ny fanontaniana momba ny fahaizana ara-piasana, ny tetikasany, ny traikefany ara-teknika, ary ny zava-bitan'i Fifaliantsoa Sarobidy aho.\n\nAza miangana anontanio momba:\n• Ny fahaizany ara-teknika\n• Ny tetikasany vita\n• Ny traikefany ara-piasana\n• Ny teknologia izay mahay\n• Ny fomba mifandraisa aminy ara-piasana",
+    outOfScope: "Miala tsiny, afaka mamaly fotsiny ny fanontaniana momba ny portfolio ara-piasana an'i Fifaliantsoa Sarobidy aho.\n\nAfaka manampy anao amin'ny:\n• Ny fahaizany ara-teknika sy ny fahaizany\n• Ny tetikasany vita (web, mobile, IA)\n• Ny traikefany ara-piasana\n• Ny teknologia izay mahay\n• Ny fomba mifandraisa aminy ara-piasana\n\nHo an'ny fanontaniana hafa, asaovy mijery ny portfolio mivantana na mifandraisa aminy amin'ny alalan'ny vaovao contact misy.",
     followup: "Te hahalala bebe kokoa momba ny zavatra iray manokana ve ianao? Anontanio aho fanontaniana mazava kokoa!",
   },
 };
@@ -521,28 +555,53 @@ export async function POST(request: NextRequest) {
         mga: 'Réponds TOUJOURS en malgache. Ampiasao ny fiteny malagasy, tsara sy mahalala fomba.',
       };
 
+      // Vérifier si la question est hors scope AVANT d'appeler l'API
+      if (isOutOfScope(message)) {
+        const outOfScopeResponse = multilingualResponses[responseLang].outOfScope;
+        return NextResponse.json({ 
+          response: outOfScopeResponse 
+        });
+      }
+
       // Créer le prompt avec contexte RAG
       const prompt = ChatPromptTemplate.fromMessages([
         [
           'system',
           `Tu es un assistant IA professionnel qui aide les visiteurs du portfolio de Fifaliantsoa Sarobidy.
 
-IMPORTANT: Tu dois absolument utiliser les informations du contexte ci-dessous pour répondre aux questions. Ne donne pas de réponses génériques si le contexte contient des informations spécifiques.
+IMPORTANT - Règles strictes à suivre:
+
+1. PORTÉE DES QUESTIONS:
+   - Tu dois UNIQUEMENT répondre aux questions concernant le portfolio professionnel de Fifaliantsoa Sarobidy
+   - Si une question est hors sujet (vie personnelle, questions générales non liées au portfolio, etc.), réponds poliment que tu ne peux répondre qu'aux questions sur le portfolio professionnel
+   - Questions acceptées: compétences techniques, projets, expérience professionnelle, technologies maîtrisées, contact professionnel
+   - Questions refusées: vie personnelle, famille, âge, salaire, hobbies personnels, questions générales non liées au portfolio
+
+2. UTILISATION DU CONTEXTE:
+   - Utilise ABSOLUMENT les informations du contexte ci-dessous pour répondre
+   - Ne donne JAMAIS de réponses génériques si le contexte contient des informations spécifiques
+   - Cite les technologies, projets et compétences EXACTEMENT comme mentionnés dans le contexte
+
+3. FORMAT DE RÉPONSE:
+   - ${langInstructions[responseLang]}
+   - Sois courtois, professionnel et concis
+   - Réponds directement à la question posée
+   - Si le contexte ne contient pas l'information exacte, dis-le honnêtement mais propose ce qui est disponible
+   - NE RÉPÈTE PAS que tu es là pour aider - réponds directement avec les informations du contexte
+
+4. EXEMPLES DE BONNES RÉPONSES:
+   - Pour "quelles sont ses compétences?": Liste les technologies et outils spécifiques du contexte
+   - Pour "quels projets a-t-il réalisés?": Cite les projets mentionnés dans le contexte
+   - Pour "est-il capable de...": Réponds avec les capacités listées dans le contexte
+   - Pour "combien d'années d'expérience?": Utilise l'information d'expérience du contexte
+
+5. EXEMPLES DE QUESTIONS À REFUSER:
+   - "Est-il marié?" → Réponds que tu ne peux répondre qu'aux questions professionnelles
+   - "Quel est son âge?" → Réponds que tu ne peux répondre qu'aux questions professionnelles
+   - "Quelle est la météo?" → Réponds que tu ne peux répondre qu'aux questions sur le portfolio
 
 Contexte du portfolio (informations pertinentes):
-{context}
-
-Instructions strictes:
-- ${langInstructions[responseLang]}
-- Sois courtois et professionnel
-- Utilise UNIQUEMENT les informations fournies dans le contexte ci-dessus pour répondre
-- Si la question concerne les compétences, technologies ou savoir-faire, cite les technologies et outils spécifiques mentionnés dans le contexte
-- Si la question concerne les projets, parle des types de projets mentionnés dans le contexte
-- Si la question concerne l'expérience, utilise les détails d'expérience mentionnés dans le contexte
-- Si la question demande "est-ce qu'il est capable de..." ou "doué en quoi", liste toutes ses capacités et compétences
-- Si le contexte ne contient pas l'information exacte demandée, dis-le honnêtement mais propose ce qui est disponible dans le contexte
-- Reste concis mais informatif et spécifique
-- NE RÉPÈTE PAS simplement que tu es là pour aider - réponds directement à la question posée avec les informations du contexte`,
+{context}`,
         ],
         ['human', '{question}'],
       ]);
@@ -585,6 +644,11 @@ Instructions strictes:
 
 // Fonction de fallback pour générer des réponses basiques sans API en utilisant la base de connaissances
 function generateBasicResponse(message: string, language: 'fr' | 'en' | 'mga' = 'fr'): string {
+  // Vérifier d'abord si c'est hors scope
+  if (isOutOfScope(message)) {
+    return multilingualResponses[language].outOfScope;
+  }
+  
   const normalizedMessage = normalizeText(message);
   const knowledgeDocs = getKnowledgeDocuments();
   

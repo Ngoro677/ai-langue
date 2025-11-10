@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import NetworkBackground from './NetworkBackground';
+import ScrollReveal from './ScrollReveal';
+import StaggerReveal from './StaggerReveal';
 
 interface Circuit {
   id: number;
@@ -336,9 +338,11 @@ export default function TechSkills() {
         </svg>
       </div>
 
-      <h1 className="text-white max-w-7xl mx-auto px-6 mt-12 text-3xl font-bold mb-12 relative z-10">
+      <ScrollReveal direction="down" delay={0.2} duration={0.8}>
+        <h1 className="text-white max-w-7xl mx-auto px-6 mt-12 text-3xl font-bold mb-12 relative z-10">
           {t('techno.technologies')}
         </h1>
+      </ScrollReveal>
 
         {/* Scrolling Technologies Section */}
         <div className="relative z-10">
@@ -422,82 +426,100 @@ export default function TechSkills() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-6">
         {/* Header */}
-        <h1 className="text-white text-3xl font-bold mb-12">
-          {t('techno.technologies')} <span className="text-yellow-500">{t('techno.details')}</span>
-        </h1>
+        <ScrollReveal direction="up" delay={0.3} duration={0.8}>
+          <h1 className="text-white text-3xl font-bold mb-12">
+            {t('techno.technologies')} <span className="text-yellow-500">{t('techno.details')}</span>
+          </h1>
+        </ScrollReveal>
 
 
         {/* Frontend Section */}
-        <div className="grid lg:grid-cols-3 gap-8 mb-16">
-          <div className="lg:col-span-2">
-            <SectionTitle icon="</>" title={t('techno.frontend')} subtitle="" />
-            <div className="grid grid-cols-3 gap-2 md:gap-4">
-              {frontendSkills.map((skill, index) => (
-                <SkillCard key={skill.name} skill={skill} index={index} />
-              ))}
+        <ScrollReveal direction="up" delay={0.4} duration={0.8}>
+          <div className="grid lg:grid-cols-3 gap-8 mb-16">
+            <div className="lg:col-span-2">
+              <SectionTitle icon="</>" title={t('techno.frontend')} subtitle="" />
+              <StaggerReveal direction="up" staggerDelay={0.05} className="grid grid-cols-3 gap-2 md:gap-4">
+                {frontendSkills.map((skill, index) => (
+                  <SkillCard key={skill.name} skill={skill} index={index} />
+                ))}
+              </StaggerReveal>
+            </div>
+            <div>
+              <ScrollReveal direction="left" delay={0.6} duration={0.8}>
+                <InfoBox
+                  title={t('techno.frontend')}
+                  description={t('techno.frontendDesc')}
+                />
+              </ScrollReveal>
             </div>
           </div>
-          <div>
-            <InfoBox
-              title={t('techno.frontend')}
-              description={t('techno.frontendDesc')}
-            />
-          </div>
-        </div>
+        </ScrollReveal>
 
         {/* Backend Section */}
-        <div className="grid lg:grid-cols-3 gap-8 mb-16">
-          <div className="lg:col-span-2">
-            <SectionTitle icon="</>" title={t('techno.backend')} subtitle={t('techno.baseDonnee')} />
-            <div className="grid grid-cols-3 gap-2 md:gap-4">
-              {backendSkills.map((skill, index) => (
-                <SkillCard key={skill.name} skill={skill} index={index} />
-              ))}
+        <ScrollReveal direction="up" delay={0.5} duration={0.8}>
+          <div className="grid lg:grid-cols-3 gap-8 mb-16">
+            <div className="lg:col-span-2">
+              <SectionTitle icon="</>" title={t('techno.backend')} subtitle={t('techno.baseDonnee')} />
+              <StaggerReveal direction="up" staggerDelay={0.05} className="grid grid-cols-3 gap-2 md:gap-4">
+                {backendSkills.map((skill, index) => (
+                  <SkillCard key={skill.name} skill={skill} index={index} />
+                ))}
+              </StaggerReveal>
+            </div>
+            <div>
+              <ScrollReveal direction="right" delay={0.7} duration={0.8}>
+                <InfoBox
+                  title={`${t('techno.backend')} ${t('techno.baseDonnee')}`}
+                  description={t('techno.backendDesc')}
+                />
+              </ScrollReveal>
             </div>
           </div>
-          <div>
-            <InfoBox
-              title={`${t('techno.backend')} ${t('techno.baseDonnee')}`}
-              description={t('techno.backendDesc')}
-            />
-          </div>
-        </div>
+        </ScrollReveal>
 
         {/* Design Tools Section */}
-        <div className="grid lg:grid-cols-3 gap-8 mb-16">
-          <div className="lg:col-span-2">
-            <SectionTitle icon="✏️" title={t('techno.outilsDesign')} subtitle={t('techno.design')} />
-            <div className="grid grid-cols-3 gap-2 md:gap-4">
-              {designTools.map((skill, index) => (
-                <SkillCard key={skill.name} skill={skill} index={index} />
-              ))}
+        <ScrollReveal direction="up" delay={0.6} duration={0.8}>
+          <div className="grid lg:grid-cols-3 gap-8 mb-16">
+            <div className="lg:col-span-2">
+              <SectionTitle icon="✏️" title={t('techno.outilsDesign')} subtitle={t('techno.design')} />
+              <StaggerReveal direction="up" staggerDelay={0.05} className="grid grid-cols-3 gap-2 md:gap-4">
+                {designTools.map((skill, index) => (
+                  <SkillCard key={skill.name} skill={skill} index={index} />
+                ))}
+              </StaggerReveal>
+            </div>
+            <div>
+              <ScrollReveal direction="left" delay={0.8} duration={0.8}>
+                <InfoBox
+                  title={`${t('techno.outilsDesign')} ${t('techno.design')}`}
+                  description={t('techno.designDesc')}
+                />
+              </ScrollReveal>
             </div>
           </div>
-          <div>
-            <InfoBox
-              title={`${t('techno.outilsDesign')} ${t('techno.design')}`}
-              description={t('techno.designDesc')}
-            />
-          </div>
-        </div>
+        </ScrollReveal>
 
         {/* Dev Tools Section */}
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <SectionTitle icon="🔧" title={t('techno.testUnitaire')} subtitle={t('techno.outils')} />
-            <div className="grid grid-cols-3 gap-2 md:gap-4">
-              {devTools.map((skill, index) => (
-                <SkillCard key={skill.name} skill={skill} index={index} />
-              ))}
+        <ScrollReveal direction="up" delay={0.7} duration={0.8}>
+          <div className="grid lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <SectionTitle icon="🔧" title={t('techno.testUnitaire')} subtitle={t('techno.outils')} />
+              <StaggerReveal direction="up" staggerDelay={0.05} className="grid grid-cols-3 gap-2 md:gap-4">
+                {devTools.map((skill, index) => (
+                  <SkillCard key={skill.name} skill={skill} index={index} />
+                ))}
+              </StaggerReveal>
+            </div>
+            <div>
+              <ScrollReveal direction="right" delay={0.9} duration={0.8}>
+                <InfoBox
+                  title={`${t('techno.testUnitaire')} ${t('techno.outils')}`}
+                  description={t('techno.outilsDesc')}
+                />
+              </ScrollReveal>
             </div>
           </div>
-          <div>
-            <InfoBox
-              title={`${t('techno.testUnitaire')} ${t('techno.outils')}`}
-              description={t('techno.outilsDesc')}
-            />
-          </div>
-        </div>
+        </ScrollReveal>
 
       </div>
     </div>

@@ -2,6 +2,8 @@
 
 import { useState, useRef } from 'react';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import ScrollReveal from './ScrollReveal';
+import StaggerReveal from './StaggerReveal';
 
 interface Project {
     image: string;
@@ -104,6 +106,7 @@ export default function Projet() {
             <div className="max-w-7xl mx-auto px-6">
 
                 {/* Projet Web */}
+                <ScrollReveal direction="up" delay={0.2} duration={0.8}>
                 <div
                     className="mb-16"
                     onMouseEnter={() => setHoveredSection('web')}
@@ -126,8 +129,7 @@ export default function Projet() {
                         {t('projet.projetWeb')}
                     </h2>
 
-                    <div 
-                        className="relative"
+                    <StaggerReveal direction="left" staggerDelay={0.05} className="relative"
                         onMouseEnter={() => setHoveredRow('web1')}
                         onMouseLeave={() => setHoveredRow(null)}
                         onMouseMove={(e) => {
@@ -234,11 +236,10 @@ export default function Projet() {
                                 </svg>
                             </button>
                         )}
-                    </div>
+                    </StaggerReveal>
 
                     
-                    <div 
-                        className="relative"
+                    <StaggerReveal direction="right" staggerDelay={0.05} className="relative"
                         onMouseEnter={() => setHoveredRow('web2')}
                         onMouseLeave={() => setHoveredRow(null)}
                         onMouseMove={(e) => {
@@ -346,11 +347,13 @@ export default function Projet() {
                                 </svg>
                             </button>
                         )}
-                    </div>
+                    </StaggerReveal>
                     
                 </div>
+                </ScrollReveal>
 
                 {/* Projet Mobile */}
+                <ScrollReveal direction="up" delay={0.3} duration={0.8}>
                 <div
                     className="mb-16"
                     onMouseEnter={() => setHoveredSection('mobile')}
@@ -373,8 +376,7 @@ export default function Projet() {
                         {t('projet.projetMobile')}
                     </h2>
 
-                    <div 
-                        className="relative"
+                    <StaggerReveal direction="left" staggerDelay={0.05} className="relative"
                         onMouseEnter={() => setHoveredRow('mobile')}
                         onMouseLeave={() => setHoveredRow(null)}
                         onMouseMove={(e) => {
@@ -480,10 +482,12 @@ export default function Projet() {
                                 </svg>
                             </button>
                         )}
-                    </div>
+                    </StaggerReveal>
                 </div>
+                </ScrollReveal>
 
                 {/* Projet IA */}
+                <ScrollReveal direction="up" delay={0.4} duration={0.8}>
                 <div
                     className="mb-16"
                     onMouseEnter={() => setHoveredSection('ia')}
@@ -565,6 +569,7 @@ export default function Projet() {
 
                     </div>
                 </div>
+                </ScrollReveal>
 
             </div>
 
