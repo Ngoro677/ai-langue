@@ -2,6 +2,8 @@
 
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import NetworkBackground from './NetworkBackground';
+import ScrollReveal from './ScrollReveal';
+import StaggerReveal from './StaggerReveal';
 
 export default function Footer() {
   const { t } = useI18n();
@@ -18,9 +20,10 @@ export default function Footer() {
       
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         {/* Top Section - Social Media & Contact */}
-        <div className="text-center space-y-6 mb-8">
-          {/* Social Media Icons */}
-          <div className="flex justify-center space-x-6">
+        <ScrollReveal direction="up" delay={0.2} duration={0.8}>
+          <div className="text-center space-y-6 mb-8">
+            {/* Social Media Icons */}
+            <StaggerReveal direction="up" staggerDelay={0.1} className="flex justify-center space-x-6">
             <a 
               href="https://wa.me/261344653609?text=Bonjour%20Sarobidy,%20J'ai%20un%20projet%20pour%20vous%20..." 
               target="_blank" 
@@ -47,33 +50,38 @@ export default function Footer() {
             >
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-              </svg>
-            </a>
-          </div>
+                </svg>
+              </a>
+            </StaggerReveal>
 
-          {/* Contact Information */}
-          <div className="space-y-2 text-gray-300">
-            <p className="text-lg">{t('footer.phone')}</p>
-            <p className="text-lg">{t('footer.email')}</p>
-            <p className="text-lg">{t('footer.location')}</p>
+            {/* Contact Information */}
+            <StaggerReveal direction="up" staggerDelay={0.1} className="space-y-2 text-gray-300">
+              <p className="text-lg">{t('footer.phone')}</p>
+              <p className="text-lg">{t('footer.email')}</p>
+              <p className="text-lg">{t('footer.location')}</p>
+            </StaggerReveal>
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* Middle Section - Separator */}
-        <div className="border-t border-gray-700 mb-8"></div>
+        <ScrollReveal direction="scale" delay={0.4} duration={0.6}>
+          <div className="border-t border-gray-700 mb-8"></div>
+        </ScrollReveal>
 
         {/* Bottom Section - Copyright & Language Flags */}
-        <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
-          {/* Copyright */}
-          <div className="text-gray-300 text-sm">
-            {t('footer.copyright')}
-          </div>
+        <ScrollReveal direction="up" delay={0.5} duration={0.8}>
+          <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+            {/* Copyright */}
+            <div className="text-gray-300 text-sm">
+              {t('footer.copyright')}
+            </div>
 
-          {/* Language Flags */}
-          <div className="text-gray-300 text-sm">
-            {t('footer.ville')}
+            {/* Language Flags */}
+            <div className="text-gray-300 text-sm">
+              {t('footer.ville')}
+            </div>
           </div>
-        </div>
+        </ScrollReveal>
       </div>
       <br />
       <br />

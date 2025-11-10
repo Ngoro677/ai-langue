@@ -3,6 +3,8 @@
 import Chatbot from './Chatbot';
 import LanguageSwitcher from './LanguageSwitcher';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import ScrollReveal from './ScrollReveal';
+import StaggerReveal from './StaggerReveal';
 
 export default function Accueil() {
   const { t } = useI18n();
@@ -17,28 +19,36 @@ export default function Accueil() {
           {/* Left side - Text content */}
           <div className="text-white space-y-6">
             {/* Introduction line */}
-            <div className="flex justify-center sm:justify-start items-center space-x-3">
-              <div className="w-12 h-0.5 bg-yellow-400"></div>
-              <span className="text-white text-lg">{t('accueil.jeSuis')}</span>
-            </div>
+            <ScrollReveal direction="right" delay={0.2} duration={0.8}>
+              <div className="flex justify-center sm:justify-start items-center space-x-3">
+                <div className="w-12 h-0.5 bg-yellow-400"></div>
+                <span className="text-white text-lg">{t('accueil.jeSuis')}</span>
+              </div>
+            </ScrollReveal>
 
             {/* Name */}
-            <h1 className="text-5xl lg:text-6xl font-bold leading-tight animate-fadeInUp whitespace-pre-line">
-              {t('accueil.nom')}
-            </h1>
+            <ScrollReveal direction="up" delay={0.4} duration={1} distance={60}>
+              <h1 className="text-5xl lg:text-6xl font-bold leading-tight whitespace-pre-line">
+                {t('accueil.nom')}
+              </h1>
+            </ScrollReveal>
 
             {/* Title */}
-            <p className="text-xl text-white">
-              {t('accueil.titre')}
-            </p>
+            <ScrollReveal direction="up" delay={0.6} duration={0.8}>
+              <p className="text-xl text-white">
+                {t('accueil.titre')}
+              </p>
+            </ScrollReveal>
 
             {/* Description */}
-            <p className="text-lg text-gray-300 leading-relaxed max-w-lg">
-              {t('accueil.description', { js: t('accueil.js'), designeur: t('accueil.designeur') })}
-            </p>
+            <ScrollReveal direction="up" delay={0.8} duration={0.8}>
+              <p className="text-lg text-gray-300 leading-relaxed max-w-lg">
+                {t('accueil.description', { js: t('accueil.js'), designeur: t('accueil.designeur') })}
+              </p>
+            </ScrollReveal>
 
             {/* Action buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+            <StaggerReveal direction="up" staggerDelay={0.1} className="flex flex-col sm:flex-row gap-4 pt-4">
               <button 
                 onClick={() => {
                   const projetSection = document.getElementById('projet');
@@ -72,7 +82,7 @@ export default function Accueil() {
                 </svg>
                 <span className="text-white group-hover:text-yellow-400 transition-colors">{t('accueil.contact')}</span>
               </button>
-            </div>
+            </StaggerReveal>
           </div>
 
         </div>

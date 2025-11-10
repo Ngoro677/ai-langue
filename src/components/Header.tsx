@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import ProfileModal from './ProfileModal';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { motion } from 'framer-motion';
 
 export default function Header() {
   const { t } = useI18n();
@@ -80,13 +81,23 @@ export default function Header() {
   };
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled ? 'bg-black/20 backdrop-blur-sm' : ''
-    }`}>
+    <motion.header 
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.6, ease: 'easeOut' }}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled ? 'bg-black/20 backdrop-blur-sm' : ''
+      }`}
+    >
       <div className="max-w-[90vw] mx-auto py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
+          <motion.div 
+            initial={{ x: -50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="flex items-center space-x-2"
+          >
              <img
                 src="/images/Logo.png"
                 alt="Logo"
@@ -94,7 +105,12 @@ export default function Header() {
               />
 
             {/* Navigation */}
-            <nav className="hidden md:flex items-center space-x-8 ml-6">
+            <motion.nav 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="hidden md:flex items-center space-x-8 ml-6"
+            >
               <button 
                 onClick={() => scrollToSection('accueil')}
                 className={`transition-colors cursor-pointer relative group font-medium flex items-center ${
@@ -134,13 +150,18 @@ export default function Header() {
                   <span className="ml-2 w-8 h-0.5 bg-yellow-400"></span>
                 )}
               </button>
-            </nav>
-          </div>
+            </motion.nav>
+          </motion.div>
 
 
 
           {/* Social Media & Profile */}
-          <div className="flex items-center space-x-4">
+          <motion.div 
+            initial={{ x: 50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="flex items-center space-x-4"
+          >
             {/* Social Icons */}
             <div className="flex items-center space-x-3">
               <a 
@@ -184,7 +205,7 @@ export default function Header() {
                 className="w-full h-full object-cover"
               />
             </button>
-          </div>
+          </motion.div>
         </div>
       </div>
 
@@ -193,7 +214,7 @@ export default function Header() {
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
       />
-    </header>
+    </motion.header>
   );
 }
 
