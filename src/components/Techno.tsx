@@ -191,7 +191,7 @@ export default function TechSkills() {
     <div
       onMouseEnter={() => setHoveredCard(`${skill.name}-${index}`)}
       onMouseLeave={() => setHoveredCard(null)}
-      className="relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-2 md:p-5 border border-gray-700 hover:border-yellow-500 transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-yellow-500/20"
+      className="relative bg-transparent rounded-lg p-2 md:p-5 border border-gray-700 hover:border-yellow-500 transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-yellow-500/20"
     >
       <div className="flex items-center justify-between mb-2 md:mb-3">
         <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center">
@@ -201,7 +201,7 @@ export default function TechSkills() {
             <img
               src={skill.icon}
               alt={skill.name}
-              className="w-full h-full object-contain"
+              className="w-6 md:w-8 h-6 md:h-8 object-contain"
               loading="lazy"
               onError={(e) => {
                 // Fallback vers emoji si l'image ne charge pas
@@ -223,13 +223,13 @@ export default function TechSkills() {
       <h3 className="text-white font-bold text-xs md:text-base mb-2 md:mb-3 leading-tight">{skill.name}</h3>
       <div className="w-full bg-gray-700 rounded-full h-1 md:h-1.5 overflow-hidden">
         <div
-          className={`h-full bg-gradient-to-r transition-all duration-500 rounded-full ${
-            hoveredCard !== null 
-              ? 'from-yellow-400 to-yellow-500' 
-              : skill.color
+          className={`h-full transition-all duration-500 rounded-full ${
+            hoveredCard === `${skill.name}-${index}`
+              ? 'bg-yellow-500' 
+              : 'bg-gray-400'
           }`}
           style={{
-            width: hoveredCard === `${skill.name}-${index}` ? `${skill.level}%` : '0%'
+            width: `${skill.level}%`
           }}
         />
       </div>
@@ -357,7 +357,7 @@ export default function TechSkills() {
               {technologies.map((tech, index) => (
                 <div
                   key={`first-${index}`}
-                  className="flex-shrink-0 w-17 bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-700 hover:border-yellow-500 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-yellow-500/20 group relative"
+                  className="flex-shrink-0 w-17 border-2 border-gary-500 bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-700 hover:border-yellow-500 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-yellow-500/20 group relative"
                 >
                   {/* Tooltip */}
                   <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs font-semibold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-300 z-50 shadow-lg border border-gray-700">
