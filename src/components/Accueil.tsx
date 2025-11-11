@@ -61,12 +61,12 @@ export default function Accueil() {
                     });
                   }
                 }}
-                className="flex items-center cursor-pointer space-x-3 bg-gray-900/80 hover:bg-gray-800/80 border border-gray-700 hover:border-yellow-400 px-6 py-3 rounded-lg transition-all duration-300 group"
+                className="flex items-center w-full cursor-pointer space-x-3 bg-gray-900/80 hover:bg-gray-800/80 border border-yellow-400 px-6 py-3 rounded-lg transition-all duration-300 group"
               >
-                <svg className="w-5 h-5 text-white group-hover:text-yellow-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-yellow-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
-                <span className="text-white group-hover:text-yellow-400 transition-colors">{t('accueil.projetRealises')}</span>
+                <span className="text-yellow-400 transition-colors">{t('accueil.projetRealises')}</span>
               </button>
               
               <button 
@@ -75,7 +75,7 @@ export default function Accueil() {
                   const whatsappUrl = `https://wa.me/261344653609?text=${message}`;
                   window.open(whatsappUrl, '_blank');
                 }}
-                className="flex items-center cursor-pointer space-x-3 bg-gray-900/80 hover:bg-gray-800/80 border border-gray-700 hover:border-yellow-400 px-6 py-3 rounded-lg transition-all duration-300 group"
+                className="flex items-center w-full cursor-pointer space-x-3 bg-gray-900/80 hover:bg-gray-800/80 border border-gray-700 hover:border-yellow-400 px-6 py-3 rounded-lg transition-all duration-300 group"
               >
                 <svg className="w-5 h-5 text-white group-hover:text-yellow-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
