@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import MobileNavigation from '@/components/MobileNavigation';
@@ -9,9 +9,11 @@ import Projet from '@/components/Projet';
 import Techno from '@/components/Techno';
 import LoadingScreen from '@/components/LoadingScreen';
 import Chatbot from '@/components/Chatbot';
+import StickyCursor from '@/components/StickyCursor';
 
 // Composant principal
 export default function Home() {
+  const stickyElement = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(() => {
     // Vérifier si c'est la première visite
     if (typeof window !== 'undefined') {
@@ -47,7 +49,8 @@ export default function Home() {
       {isLoading && <LoadingScreen onComplete={handleLoadingComplete} />}
       {!isLoading && (
         <div className="min-h-screen animate-fadeIn">
-          <Header />
+          <Header ref={stickyElement} />
+          <StickyCursor stickyElement={stickyElement as React.RefObject<HTMLDivElement>} />
           <main className=" md:pb-0">
             <section id="accueil">
               <Accueil />

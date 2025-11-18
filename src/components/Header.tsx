@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, forwardRef } from 'react';
 import ProfileModal from './ProfileModal';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { motion } from 'framer-motion';
 
-export default function Header() {
+const Header = forwardRef<HTMLDivElement>((props, ref) => {
   const { t } = useI18n();
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeLink, setActiveLink] = useState('accueil');
@@ -89,6 +89,7 @@ export default function Header() {
         isScrolled ? 'bg-black/20 backdrop-blur-sm' : ''
       }`}
     >
+      <div ref={ref} className="bounds absolute inset-0 pointer-events-none"></div>
       <div className="max-w-[90vw] mx-auto py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
@@ -216,5 +217,9 @@ export default function Header() {
       />
     </motion.header>
   );
-}
+});
+
+Header.displayName = 'Header';
+
+export default Header;
 

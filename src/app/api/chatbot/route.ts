@@ -39,6 +39,17 @@ function createSectionLink(text: string, sectionId: string, language: 'fr' | 'en
   return `<a href="#${sectionId}" data-section-id="${sectionId}" class="section-link text-yellow-400 hover:text-yellow-300 underline font-semibold cursor-pointer transition-colors">${text}</a>`;
 }
 
+// Créer un lien de téléchargement pour le CV
+function createCVLink(language: 'fr' | 'en' | 'mga' = 'fr'): string {
+  const linkTexts = {
+    fr: 'Télécharger le CV',
+    en: 'Download CV',
+    mga: 'Ampidino ny CV',
+  };
+  
+  return `<a href="/cv.pdf" download="CV_Sarobidy_Fifaliantsoa.pdf" class="cv-link text-yellow-400 hover:text-yellow-300 underline font-semibold cursor-pointer transition-colors">${linkTexts[language]}</a>`;
+}
+
 // Nettoyer les réponses pour supprimer les markdown et formater proprement
 function cleanResponse(response: string): string {
   return response
@@ -160,13 +171,19 @@ function normalizeQuestion(question: string): string {
     return 'outOfScope';
   }
   
+  // PRIORITÉ 1: Demandes de CV
+  if (normalized.match(/(cv|curriculum|resume|montrer.*cv|voir.*cv|telecharger.*cv|download.*cv|afficher.*cv|show.*cv|envoyer.*cv|send.*cv)/i) ||
+      originalLower.includes('curriculum vitae') || originalLower.includes('curriculum vitæ')) {
+    return 'cv';
+  }
+  
   // PRIORITÉ 2: Variantes de salutations
   if (normalized.match(/^(bonjour|salut|hello|hi|miarahaba|manao ahoana)/i)) {
     return 'bonjour';
   }
   
   // PRIORITÉ 3: Questions sur les projets web
-  if (normalized.match(/(projet web|projets web|ses projets|ses projet|show projects|montrer projet|voir projet|list projects|web projects)/i) ||
+  if (normalized.match(/(projet web|projets web|ses projets|ses projet|show projects|montrer projet|voir projet|list projects|web projects|projet mobile|projets mobile|projet ia|projets ia)/i) ||
       originalLower.includes('ses projets') || originalLower.includes('projets web') || originalLower.includes('projet web')) {
     return 'projets';
   }
@@ -223,10 +240,17 @@ const synonyms: { [key: string]: string[] } = {
   'doué': ['doué', 'doué en', 'bon en', 'expert', 'expertise', 'talent', 'talented'],
 };
 
-// Recherche simple par mots-clés pour le RAG avec synonymes
-function searchByKeywords(query: string, documents: string[], k: number = 3): string[] {
+// Recherche améliorée par mots-clés pour le RAG avec synonymes et correspondance de phrases
+function searchByKeywords(query: string, documents: string[], k: number = 5): string[] {
   const normalizedQuery = normalizeText(query);
+  const originalQuery = query.toLowerCase();
   const queryWords = normalizedQuery.split(/\s+/).filter(w => w.length > 2);
+  
+  // Détecter les phrases complètes dans la requête
+  const queryPhrases = [
+    normalizedQuery,
+    ...queryWords.slice(0, 3).map((_, i) => queryWords.slice(i, i + 3).join(' ')) // Phrases de 3 mots
+  ];
   
   // Étendre les mots-clés avec leurs synonymes
   const expandedKeywords: string[] = [];
@@ -241,27 +265,55 @@ function searchByKeywords(query: string, documents: string[], k: number = 3): st
     });
   });
   
-  // Score chaque document basé sur les mots-clés
+  // Score chaque document basé sur les mots-clés et phrases
   const scoredDocs = documents.map((doc, index) => {
     const normalizedDoc = normalizeText(doc);
+    const originalDoc = doc.toLowerCase();
     let score = 0;
     
+    // Bonus pour correspondance de phrase complète (très important)
+    queryPhrases.forEach(phrase => {
+      if (phrase.length > 5 && normalizedDoc.includes(phrase)) {
+        score += 10; // Bonus élevé pour correspondance de phrase
+      }
+    });
+    
+    // Score pour chaque mot-clé
     expandedKeywords.forEach((keyword) => {
       if (keyword.length > 2) {
-        // Correspondance exacte
+        // Correspondance exacte (plus de poids)
         if (normalizedDoc.includes(keyword)) {
-          score += 3;
+          score += 4;
         }
         // Correspondance partielle
-        const matches = (normalizedDoc.match(new RegExp(keyword, 'g')) || []).length;
+        const matches = (normalizedDoc.match(new RegExp(keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g')) || []).length;
         score += matches * 2;
       }
     });
     
-    // Bonus si le titre de section correspond
-    if (doc.includes('##') && queryWords.some(qw => normalizedDoc.includes(qw))) {
-      score += 5;
+    // Bonus si le titre de section correspond (##)
+    if (doc.includes('##')) {
+      const sectionTitle = doc.split('##')[1]?.split('\n')[0]?.toLowerCase() || '';
+      if (queryWords.some(qw => sectionTitle.includes(normalizeText(qw)))) {
+        score += 8; // Bonus élevé pour correspondance de titre de section
+      }
     }
+    
+    // Bonus pour correspondance de noms de projets spécifiques
+    const projectNames = ['ilodesk', 'digitheque', 'sarakodev', 'raitra', 'ca2e', 'congé', 'gta', 'smart dashboard', 'portfolio', 'ilomad'];
+    projectNames.forEach(projectName => {
+      if (originalQuery.includes(projectName) && originalDoc.includes(projectName)) {
+        score += 15; // Bonus très élevé pour correspondance de nom de projet
+      }
+    });
+    
+    // Bonus pour correspondance de technologies spécifiques
+    const techNames = ['react', 'next.js', 'angular', 'node.js', 'nestjs', 'typescript', 'javascript', 'tailwind', 'figma', 'adobe'];
+    techNames.forEach(techName => {
+      if (originalQuery.includes(techName) && originalDoc.includes(techName)) {
+        score += 12; // Bonus élevé pour correspondance de technologie
+      }
+    });
     
     return { doc, score, index };
   });
@@ -275,11 +327,18 @@ function searchByKeywords(query: string, documents: string[], k: number = 3): st
   // Si aucun document pertinent, retourner les documents de compétences par défaut pour certaines requêtes
   if (relevantDocs.length === 0) {
     const lowerQuery = query.toLowerCase();
-    if (lowerQuery.includes('competence') || lowerQuery.includes('compétence') || lowerQuery.includes('technologie') || lowerQuery.includes('sait')) {
+    if (lowerQuery.includes('competence') || lowerQuery.includes('compétence') || lowerQuery.includes('technologie') || lowerQuery.includes('sait') || lowerQuery.includes('skill')) {
       const competenceDocs = documents.filter(doc => 
-        normalizeText(doc).includes('competence') || normalizeText(doc).includes('technologie')
+        normalizeText(doc).includes('competence') || normalizeText(doc).includes('technologie') || normalizeText(doc).includes('skill')
       );
       return competenceDocs.slice(0, k);
+    }
+    // Fallback pour projets
+    if (lowerQuery.includes('projet') || lowerQuery.includes('project')) {
+      const projetDocs = documents.filter(doc => 
+        normalizeText(doc).includes('projet') || normalizeText(doc).includes('project')
+      );
+      return projetDocs.slice(0, k);
     }
   }
   
@@ -295,11 +354,11 @@ let documentsCache: Array<{ content: string; embedding?: number[] }> = [];
 let chatModel: ChatOpenAI;
 
 // Fonction pour rechercher des documents pertinents avec RAG
-async function searchRelevantDocs(query: string, k: number = 3): Promise<string> {
+async function searchRelevantDocs(query: string, k: number = 5): Promise<string> {
   const apiKey = process.env.OPENAI_API_KEY;
   const knowledgeDocs = getKnowledgeDocuments();
   
-  // Si pas de clé API, utiliser recherche par mots-clés
+  // Si pas de clé API, utiliser recherche par mots-clés améliorée
   if (!apiKey) {
     const relevantDocs = searchByKeywords(query, knowledgeDocs, k);
     return relevantDocs.join('\n\n');
@@ -356,11 +415,19 @@ async function searchRelevantDocs(query: string, k: number = 3): Promise<string>
       return { doc: doc.content, score };
     });
 
-    // Trier par score et retourner les top k
+    // Trier par score et retourner les top k (avec seuil minimum pour la qualité)
     const topDocs = scoredDocs
       .sort((a, b) => b.score - a.score)
+      .filter((item) => item.score > 0.3) // Seuil minimum de similarité pour éviter les résultats non pertinents
       .slice(0, k)
       .map((item) => item.doc);
+
+    // Si pas assez de documents avec un bon score, utiliser recherche par mots-clés en complément
+    if (topDocs.length < 3) {
+      const keywordDocs = searchByKeywords(query, knowledgeDocs, Math.max(3, k - topDocs.length));
+      const combinedDocs = [...topDocs, ...keywordDocs.filter(doc => !topDocs.includes(doc))];
+      return combinedDocs.slice(0, k).join('\n\n');
+    }
 
     return topDocs.join('\n\n');
   } catch (error) {
@@ -380,7 +447,7 @@ const multilingualResponses = {
     language: "Fifaliantsoa Sarobidy est le plus fort en JavaScript et TypeScript. Il est spécialisé dans ces langages avec plus de 4 ans d'expérience. Il maîtrise également les frameworks modernes basés sur JavaScript comme React, Next.js, Angular, Node.js et NestJS.",
     projets: (lang: 'fr' | 'en' | 'mga' = 'fr') => {
       const link = createSectionLink('section Projets', 'projet', lang);
-      return `Voici les projets web réalisés par Fifaliantsoa Sarobidy :\n\n• Dashboard Ilodesk - Plateforme de gestion avec ReactJS, TypeScript, .NET, SQL Server\n• Ilodesk Platform - Solution complète avec ReactJS, TypeScript, Tailwind\n• Smart Dashboard - Dashboard intelligent avec ReactJS, NestJS, Stripe, Chart.js\n• Digitheque - Application Next.js avec Prisma et Tailwind\n• Portfolio - Site portfolio avec ReactJS, Framer Motion, GSAP\n• Ilomad Website - Site web avec Next.js, PHP, MySQL\n• Sarakodev - Plateforme avec Express, Next.js, PostgreSQL, AWS\n• Raitra - Application ReactJS avec Node.js et PostgreSQL\n• CA2E Platform - Plateforme Laravel avec React et MySQL\n• Congé Manager - Gestionnaire de congés avec ReactJS, Express, PostgreSQL\n• GTA Project - Projet Next.js avec Blender\n\nCliquez ici pour voir tous les projets : ${link}`;
+      return `Voici les projets réalisés par Fifaliantsoa Sarobidy :\n\n**Projets Web :**\n• Dashboard Ilodesk - Plateforme de gestion avec ReactJS, TypeScript, .NET, SQL Server\n• Ilodesk Platform - Solution complète avec ReactJS, TypeScript, Tailwind\n• Smart Dashboard - Dashboard intelligent avec ReactJS, NestJS, Stripe, Chart.js\n• Digitheque - Application Next.js avec Prisma et Tailwind\n• Portfolio - Site portfolio avec ReactJS, Framer Motion, GSAP\n• Ilomad Website - Site web avec Next.js, PHP, MySQL\n• Sarakodev - Plateforme avec Express, Next.js, PostgreSQL, AWS\n• Raitra - Application ReactJS avec Node.js et PostgreSQL\n• CA2E Platform - Plateforme Laravel avec React et MySQL\n• Congé Manager - Gestionnaire de congés avec ReactJS, Express, PostgreSQL\n• GTA Project - Projet Next.js avec Blender\n\n**Projets Mobile :**\n• Mobilité PNUD - Application mobile avec React Native, Firebase, Maps API\n• CA2E Mobile - Application mobile avec React Native, Express.js, SQLite\n• DEIS Mobile - Application mobile avec Ionic, Angular, SQLite\n• Portfolio Mobile - Application mobile avec React Native\n\n**Projets IA :**\n• AI Project - Projet d'intelligence artificielle avec Python, TensorFlow, OpenCV, FastAPI\n\nCliquez ici pour voir tous les projets : ${link}`;
     },
     technologies: (lang: 'fr' | 'en' | 'mga' = 'fr') => {
       const link = createSectionLink('section Technologies', 'techno', lang);
@@ -388,7 +455,11 @@ const multilingualResponses = {
     },
     frontendBackend: "Fifaliantsoa Sarobidy est un développeur fullstack, ce qui signifie qu'il est compétent à la fois en frontend et en backend. Il excelle particulièrement en :\n\n• Frontend : React, Next.js, Angular avec TypeScript et Tailwind CSS\n• Backend : Node.js et NestJS\n\nIl a une solide expérience dans les deux domaines et peut développer des applications complètes de bout en bout.",
     experience: "Oui, c'est exact. Fifaliantsoa Sarobidy a plus de 4 ans d'expérience dans le développement web et mobile. Il a acquis cette expérience en travaillant sur divers projets professionnels, en développant des applications web complètes, des interfaces utilisateur modernes, et en intégrant des systèmes d'intelligence artificielle. Son expertise couvre le développement frontend et backend, ainsi que le design UI/UX.",
-    outOfScope: "Désolé, je ne peux répondre qu'aux questions concernant le portfolio professionnel de Fifaliantsoa Sarobidy.\n\nJe peux vous aider avec :\n• Ses compétences techniques et savoir-faire\n• Ses projets réalisés (web, mobile, IA)\n• Son expérience professionnelle\n• Les technologies qu'il maîtrise\n• Comment le contacter professionnellement\n\nPour toute autre question, je vous invite à consulter directement le portfolio ou à le contacter via les informations de contact disponibles.",
+    cv: (lang: 'fr' | 'en' | 'mga' = 'fr') => {
+      const cvLink = createCVLink(lang);
+      return `Le CV de Fifaliantsoa Sarobidy est disponible en format PDF. Vous pouvez le télécharger en cliquant sur le lien suivant : ${cvLink}\n\nLe CV contient toutes les informations détaillées sur son parcours professionnel, ses compétences, ses projets et ses expériences.`;
+    },
+    outOfScope: "Désolé, je ne peux répondre qu'aux questions concernant le portfolio professionnel de Fifaliantsoa Sarobidy.\n\nJe peux vous aider avec :\n• Ses compétences techniques et savoir-faire\n• Ses projets réalisés (web, mobile, IA)\n• Son expérience professionnelle\n• Les technologies qu'il maîtrise\n• Comment le contacter professionnellement\n• Son CV\n\nPour toute autre question, je vous invite à consulter directement le portfolio ou à le contacter via les informations de contact disponibles.",
     followup: "Souhaitez-vous en savoir plus sur un point spécifique ? Posez-moi une question plus précise !",
   },
   en: {
@@ -398,7 +469,7 @@ const multilingualResponses = {
     language: "Fifaliantsoa Sarobidy is strongest in JavaScript and TypeScript. He specializes in these languages with more than 4 years of experience. He also masters modern JavaScript-based frameworks like React, Next.js, Angular, Node.js, and NestJS.",
     projets: (lang: 'fr' | 'en' | 'mga' = 'en') => {
       const link = createSectionLink('Projects section', 'projet', lang);
-      return `Here are the web projects developed by Fifaliantsoa Sarobidy:\n\n• Dashboard Ilodesk - Management platform with ReactJS, TypeScript, .NET, SQL Server\n• Ilodesk Platform - Complete solution with ReactJS, TypeScript, Tailwind\n• Smart Dashboard - Smart dashboard with ReactJS, NestJS, Stripe, Chart.js\n• Digitheque - Next.js application with Prisma and Tailwind\n• Portfolio - Portfolio site with ReactJS, Framer Motion, GSAP\n• Ilomad Website - Website with Next.js, PHP, MySQL\n• Sarakodev - Platform with Express, Next.js, PostgreSQL, AWS\n• Raitra - ReactJS application with Node.js and PostgreSQL\n• CA2E Platform - Laravel platform with React and MySQL\n• Congé Manager - Leave manager with ReactJS, Express, PostgreSQL\n• GTA Project - Next.js project with Blender\n\nClick here to see all projects: ${link}`;
+      return `Here are the projects developed by Fifaliantsoa Sarobidy:\n\n**Web Projects:**\n• Dashboard Ilodesk - Management platform with ReactJS, TypeScript, .NET, SQL Server\n• Ilodesk Platform - Complete solution with ReactJS, TypeScript, Tailwind\n• Smart Dashboard - Smart dashboard with ReactJS, NestJS, Stripe, Chart.js\n• Digitheque - Next.js application with Prisma and Tailwind\n• Portfolio - Portfolio site with ReactJS, Framer Motion, GSAP\n• Ilomad Website - Website with Next.js, PHP, MySQL\n• Sarakodev - Platform with Express, Next.js, PostgreSQL, AWS\n• Raitra - ReactJS application with Node.js and PostgreSQL\n• CA2E Platform - Laravel platform with React and MySQL\n• Congé Manager - Leave manager with ReactJS, Express, PostgreSQL\n• GTA Project - Next.js project with Blender\n\n**Mobile Projects:**\n• Mobilité PNUD - Mobile application with React Native, Firebase, Maps API\n• CA2E Mobile - Mobile application with React Native, Express.js, SQLite\n• DEIS Mobile - Mobile application with Ionic, Angular, SQLite\n• Portfolio Mobile - Mobile application with React Native\n\n**AI Projects:**\n• AI Project - Artificial intelligence project with Python, TensorFlow, OpenCV, FastAPI\n\nClick here to see all projects: ${link}`;
     },
     technologies: (lang: 'fr' | 'en' | 'mga' = 'en') => {
       const link = createSectionLink('Technologies section', 'techno', lang);
@@ -406,7 +477,11 @@ const multilingualResponses = {
     },
     frontendBackend: "Fifaliantsoa Sarobidy is a fullstack developer, meaning he is competent in both frontend and backend. He particularly excels in:\n\n• Frontend: React, Next.js, Angular with TypeScript and Tailwind CSS\n• Backend: Node.js and NestJS\n\nHe has solid experience in both domains and can develop complete end-to-end applications.",
     experience: "Yes, that's correct. Fifaliantsoa Sarobidy has more than 4 years of experience in web and mobile development. He has gained this experience by working on various professional projects, developing complete web applications, modern user interfaces, and integrating artificial intelligence systems. His expertise covers frontend and backend development, as well as UI/UX design.",
-    outOfScope: "Sorry, I can only answer questions about Fifaliantsoa Sarobidy's professional portfolio.\n\nI can help you with:\n• His technical skills and capabilities\n• His completed projects (web, mobile, AI)\n• His professional experience\n• The technologies he masters\n• How to contact him professionally\n\nFor any other questions, I invite you to check the portfolio directly or contact him via the available contact information.",
+    cv: (lang: 'fr' | 'en' | 'mga' = 'en') => {
+      const cvLink = createCVLink(lang);
+      return `Fifaliantsoa Sarobidy's CV is available in PDF format. You can download it by clicking on the following link: ${cvLink}\n\nThe CV contains all detailed information about his professional background, skills, projects and experiences.`;
+    },
+    outOfScope: "Sorry, I can only answer questions about Fifaliantsoa Sarobidy's professional portfolio.\n\nI can help you with:\n• His technical skills and capabilities\n• His completed projects (web, mobile, AI)\n• His professional experience\n• The technologies he masters\n• How to contact him professionally\n• His CV\n\nFor any other questions, I invite you to check the portfolio directly or contact him via the available contact information.",
     followup: "Would you like to know more about a specific point? Ask me a more specific question!",
   },
   mga: {
@@ -416,7 +491,7 @@ const multilingualResponses = {
     language: "Fifaliantsoa Sarobidy dia matanjaka indrindra amin'ny JavaScript sy TypeScript. Manokana amin'ireo fiteny ireo izy miaraka amin'ny traikefa mihoatra ny 4 taona. Mahay koa ny frameworks maoderina miorina amin'ny JavaScript toy ny React, Next.js, Angular, Node.js, ary NestJS.",
     projets: (lang: 'fr' | 'en' | 'mga' = 'mga') => {
       const link = createSectionLink('fizarana Tetikasa', 'projet', lang);
-      return `Ireto ny tetikasa web namboarin'i Fifaliantsoa Sarobidy:\n\n• Dashboard Ilodesk - Platform fitantanana miaraka amin'ny ReactJS, TypeScript, .NET, SQL Server\n• Ilodesk Platform - Vahaolana feno miaraka amin'ny ReactJS, TypeScript, Tailwind\n• Smart Dashboard - Dashboard manan-tsaina miaraka amin'ny ReactJS, NestJS, Stripe, Chart.js\n• Digitheque - Application Next.js miaraka amin'ny Prisma sy Tailwind\n• Portfolio - Tranokala portfolio miaraka amin'ny ReactJS, Framer Motion, GSAP\n• Ilomad Website - Tranokala miaraka amin'ny Next.js, PHP, MySQL\n• Sarakodev - Platform miaraka amin'ny Express, Next.js, PostgreSQL, AWS\n• Raitra - Application ReactJS miaraka amin'ny Node.js sy PostgreSQL\n• CA2E Platform - Platform Laravel miaraka amin'ny React sy MySQL\n• Congé Manager - Mpitantana fialan-tsasatra miaraka amin'ny ReactJS, Express, PostgreSQL\n• GTA Project - Tetikasa Next.js miaraka amin'ny Blender\n\nTsindrio eto ho hitanao ny tetikasa rehetra: ${link}`;
+      return `Ireto ny tetikasa namboarin'i Fifaliantsoa Sarobidy:\n\n**Tetikasa Web:**\n• Dashboard Ilodesk - Platform fitantanana miaraka amin'ny ReactJS, TypeScript, .NET, SQL Server\n• Ilodesk Platform - Vahaolana feno miaraka amin'ny ReactJS, TypeScript, Tailwind\n• Smart Dashboard - Dashboard manan-tsaina miaraka amin'ny ReactJS, NestJS, Stripe, Chart.js\n• Digitheque - Application Next.js miaraka amin'ny Prisma sy Tailwind\n• Portfolio - Tranokala portfolio miaraka amin'ny ReactJS, Framer Motion, GSAP\n• Ilomad Website - Tranokala miaraka amin'ny Next.js, PHP, MySQL\n• Sarakodev - Platform miaraka amin'ny Express, Next.js, PostgreSQL, AWS\n• Raitra - Application ReactJS miaraka amin'ny Node.js sy PostgreSQL\n• CA2E Platform - Platform Laravel miaraka amin'ny React sy MySQL\n• Congé Manager - Mpitantana fialan-tsasatra miaraka amin'ny ReactJS, Express, PostgreSQL\n• GTA Project - Tetikasa Next.js miaraka amin'ny Blender\n\n**Tetikasa Mobile:**\n• Mobilité PNUD - Application mobile miaraka amin'ny React Native, Firebase, Maps API\n• CA2E Mobile - Application mobile miaraka amin'ny React Native, Express.js, SQLite\n• DEIS Mobile - Application mobile miaraka amin'ny Ionic, Angular, SQLite\n• Portfolio Mobile - Application mobile miaraka amin'ny React Native\n\n**Tetikasa IA:**\n• AI Project - Tetikasa IA miaraka amin'ny Python, TensorFlow, OpenCV, FastAPI\n\nTsindrio eto ho hitanao ny tetikasa rehetra: ${link}`;
     },
     technologies: (lang: 'fr' | 'en' | 'mga' = 'mga') => {
       const link = createSectionLink('fizarana Teknologia', 'techno', lang);
@@ -424,7 +499,11 @@ const multilingualResponses = {
     },
     frontendBackend: "Fifaliantsoa Sarobidy dia mpamorona fullstack, izany hoe mahay amin'ny frontend sy backend. Matanjaka indrindra amin'ny:\n\n• Frontend: React, Next.js, Angular miaraka amin'ny TypeScript sy Tailwind CSS\n• Backend: Node.js sy NestJS\n\nManana traikefa mafy amin'ny sehatra roa izy ary afaka mamorona application feno hatrany A ka Z.",
     experience: "Eny, marina izany. Fifaliantsoa Sarobidy dia manana traikefa mihoatra ny 4 taona amin'ny fampandrosoana web sy mobile. Nahazo io traikefa io izy amin'ny alalan'ny fiasana amin'ny tetikasa ara-piasana samihafa, fampandrosoana application web feno, interface mpampiasa maoderina, ary fampifandraisana rafitra IA. Ny fahaizany dia ahitana fampandrosoana frontend sy backend, ary koa design UI/UX.",
-    outOfScope: "Miala tsiny, afaka mamaly fotsiny ny fanontaniana momba ny portfolio ara-piasana an'i Fifaliantsoa Sarobidy aho.\n\nAfaka manampy anao amin'ny:\n• Ny fahaizany ara-teknika sy ny fahaizany\n• Ny tetikasany vita (web, mobile, IA)\n• Ny traikefany ara-piasana\n• Ny teknologia izay mahay\n• Ny fomba mifandraisa aminy ara-piasana\n\nHo an'ny fanontaniana hafa, asaovy mijery ny portfolio mivantana na mifandraisa aminy amin'ny alalan'ny vaovao contact misy.",
+    cv: (lang: 'fr' | 'en' | 'mga' = 'mga') => {
+      const cvLink = createCVLink(lang);
+      return `Ny CV an'i Fifaliantsoa Sarobidy dia azo ampidina amin'ny format PDF. Afaka ampidina izany amin'ny alalan'ny tsindrio ny rohy manaraka: ${cvLink}\n\nNy CV dia ahitana ny vaovao rehetra momba ny lalana niadidiny ara-piasana, ny fahaizany, ny tetikasany ary ny traikefany.`;
+    },
+    outOfScope: "Miala tsiny, afaka mamaly fotsiny ny fanontaniana momba ny portfolio ara-piasana an'i Fifaliantsoa Sarobidy aho.\n\nAfaka manampy anao amin'ny:\n• Ny fahaizany ara-teknika sy ny fahaizany\n• Ny tetikasany vita (web, mobile, IA)\n• Ny traikefany ara-piasana\n• Ny teknologia izay mahay\n• Ny fomba mifandraisa aminy ara-piasana\n• Ny CV\n\nHo an'ny fanontaniana hafa, asaovy mijery ny portfolio mivantana na mifandraisa aminy amin'ny alalan'ny vaovao contact misy.",
     followup: "Te hahalala bebe kokoa momba ny zavatra iray manokana ve ianao? Anontanio aho fanontaniana mazava kokoa!",
   },
 };
@@ -460,6 +539,13 @@ export async function POST(request: NextRequest) {
     }
     
     // Gérer les questions spécifiques avec réponses précises
+    if (normalizedQ === 'cv') {
+      const cvResponse = multilingualResponses[responseLang].cv(responseLang);
+      return NextResponse.json({ 
+        response: cvResponse 
+      });
+    }
+    
     if (normalizedQ === 'projets') {
       const projetsResponse = multilingualResponses[responseLang].projets(responseLang);
       return NextResponse.json({ 
@@ -539,13 +625,13 @@ export async function POST(request: NextRequest) {
       if (!chatModel) {
         chatModel = new ChatOpenAI({
           openAIApiKey: apiKey,
-          modelName: 'gpt-3.5-turbo',
-          temperature: 0.7,
+          modelName: 'gpt-4o-mini', // Utiliser un modèle plus récent et performant
+          temperature: 0.3, // Réduire la température pour des réponses plus précises et cohérentes
         });
       }
 
-      // Rechercher des documents pertinents avec RAG (augmenter à 5 pour plus de contexte)
-      const relevantDocs = await searchRelevantDocs(message, 5);
+      // Rechercher des documents pertinents avec RAG (augmenter à 8 pour plus de contexte)
+      const relevantDocs = await searchRelevantDocs(message, 8);
 
       // Déterminer la langue de réponse
       const langInstructions = {
@@ -572,32 +658,44 @@ IMPORTANT - Règles strictes à suivre:
 
 1. PORTÉE DES QUESTIONS:
    - Tu dois UNIQUEMENT répondre aux questions concernant le portfolio professionnel de Fifaliantsoa Sarobidy
-   - Si une question est hors sujet (vie personnelle, questions générales non liées au portfolio, etc.), réponds poliment que tu ne peux répondre qu'aux questions sur le portfolio professionnel
-   - Questions acceptées: compétences techniques, projets, expérience professionnelle, technologies maîtrisées, contact professionnel
+   - Si une question est hors sujet (vie personnelle, questions générales non liées au portfolio, etc.), réponds poliment "Désolé, je ne peux répondre qu'aux questions concernant le portfolio professionnel de Fifaliantsoa Sarobidy."
+   - Questions acceptées: compétences techniques, projets, expérience professionnelle, technologies maîtrisées, contact professionnel, CV
    - Questions refusées: vie personnelle, famille, âge, salaire, hobbies personnels, questions générales non liées au portfolio
 
 2. UTILISATION DU CONTEXTE:
    - Utilise ABSOLUMENT les informations du contexte ci-dessous pour répondre
    - Ne donne JAMAIS de réponses génériques si le contexte contient des informations spécifiques
    - Cite les technologies, projets et compétences EXACTEMENT comme mentionnés dans le contexte
+   - Si la question demande des détails spécifiques (nom de projet, technologie précise, etc.), cherche DANS LE CONTEXTE et cite exactement ce qui est mentionné
+   - Si l'information demandée n'existe PAS dans le contexte, réponds "Désolé, je n'ai pas cette information dans le portfolio. Je peux vous aider avec ses compétences, projets, expérience, technologies ou comment le contacter."
+   - Pour les questions sur un projet spécifique, cite TOUTES les informations disponibles dans le contexte (technologies, description, URL)
+   - Pour les questions sur une technologie, cite TOUS les projets qui l'utilisent si mentionnés dans le contexte
 
-3. FORMAT DE RÉPONSE:
+3. GESTION DU CV:
+   - Si on demande le CV, réponds que le CV est disponible en format PDF et peut être téléchargé
+   - Pour le lien CV, utilise: <a href="/cv.pdf" download="CV_Sarobidy_Fifaliantsoa.pdf" class="cv-link text-yellow-400 hover:text-yellow-300 underline font-semibold cursor-pointer transition-colors">Télécharger le CV</a>
+
+4. FORMAT DE RÉPONSE:
    - ${langInstructions[responseLang]}
    - Sois courtois, professionnel et concis
    - Réponds directement à la question posée
-   - Si le contexte ne contient pas l'information exacte, dis-le honnêtement mais propose ce qui est disponible
+   - Si le contexte ne contient pas l'information exacte, dis "Désolé, je n'ai pas cette information dans le portfolio."
    - NE RÉPÈTE PAS que tu es là pour aider - réponds directement avec les informations du contexte
 
-4. EXEMPLES DE BONNES RÉPONSES:
-   - Pour "quelles sont ses compétences?": Liste les technologies et outils spécifiques du contexte
-   - Pour "quels projets a-t-il réalisés?": Cite les projets mentionnés dans le contexte
+5. EXEMPLES DE BONNES RÉPONSES:
+   - Pour "quelles sont ses compétences?": Liste les technologies et outils spécifiques du contexte avec leurs niveaux de maîtrise si disponibles
+   - Pour "quels projets a-t-il réalisés?": Cite les projets mentionnés dans le contexte avec leurs technologies, descriptions et URLs si disponibles
+   - Pour "quel projet utilise React?": Liste TOUS les projets du contexte qui utilisent React avec leurs détails
+   - Pour "parle-moi du projet Ilodesk": Donne TOUTES les informations disponibles dans le contexte sur ce projet (description, technologies, URL)
    - Pour "est-il capable de...": Réponds avec les capacités listées dans le contexte
-   - Pour "combien d'années d'expérience?": Utilise l'information d'expérience du contexte
+   - Pour "combien d'années d'expérience?": Utilise l'information d'expérience du contexte (plus de 4 ans)
+   - Pour "montrer le CV" ou "télécharger le CV": Fournis le lien de téléchargement
+   - Pour "quelles technologies maîtrise-t-il?": Liste TOUTES les technologies mentionnées dans le contexte, organisées par catégorie (Frontend, Backend, Design, etc.)
 
-5. EXEMPLES DE QUESTIONS À REFUSER:
-   - "Est-il marié?" → Réponds que tu ne peux répondre qu'aux questions professionnelles
-   - "Quel est son âge?" → Réponds que tu ne peux répondre qu'aux questions professionnelles
-   - "Quelle est la météo?" → Réponds que tu ne peux répondre qu'aux questions sur le portfolio
+6. EXEMPLES DE QUESTIONS À REFUSER:
+   - "Est-il marié?" → "Désolé, je ne peux répondre qu'aux questions professionnelles."
+   - "Quel est son âge?" → "Désolé, je ne peux répondre qu'aux questions professionnelles."
+   - "Quelle est la météo?" → "Désolé, je ne peux répondre qu'aux questions sur le portfolio."
 
 Contexte du portfolio (informations pertinentes):
 {context}`,
