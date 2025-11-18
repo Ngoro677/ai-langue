@@ -146,7 +146,7 @@ export default function Chatbot() {
     return processedParts.join('');
   };
 
-  // Ajouter un gestionnaire d'événements pour les liens de section
+  // Ajouter un gestionnaire d'événements pour les liens de section et CV
   useEffect(() => {
     const handleSectionLinks = (e: Event) => {
       const target = e.target as HTMLElement;
@@ -170,15 +170,41 @@ export default function Chatbot() {
       }
     };
 
+    const handleCVLinks = (e: Event) => {
+      const target = e.target as HTMLElement;
+      const link = target.closest('.cv-link') as HTMLElement;
+      
+      if (link && link.classList.contains('cv-link')) {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+          // Créer un lien temporaire pour télécharger le PDF
+          const downloadLink = document.createElement('a');
+          downloadLink.href = '/cv.pdf';
+          downloadLink.download = 'CV_Sarobidy_Fifaliantsoa.pdf';
+          downloadLink.target = '_blank';
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+        } catch (error) {
+          console.error('Erreur lors du téléchargement du CV:', error);
+          // Fallback: ouvrir le PDF dans un nouvel onglet
+          window.open('/cv.pdf', '_blank');
+        }
+      }
+    };
+
     // Utiliser la délégation d'événements pour les liens dynamiques
     // Attacher au conteneur du chatbot pour éviter les conflits
     const chatbotContainer = document.querySelector('[data-chatbot-container]');
     const container = chatbotContainer || document;
     
     container.addEventListener('click', handleSectionLinks);
+    container.addEventListener('click', handleCVLinks);
     
     return () => {
       container.removeEventListener('click', handleSectionLinks);
+      container.removeEventListener('click', handleCVLinks);
     };
   }, []);
 

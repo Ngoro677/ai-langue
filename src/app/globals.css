@@ -13,6 +13,14 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
   line-height: 1.6;
   background: rgb(37, 37, 37);
+  cursor: none; /* Masquer le curseur par défaut pour utiliser le curseur personnalisé */
+}
+
+/* Réafficher le curseur sur les écrans tactiles */
+@media (hover: none) {
+  body {
+    cursor: auto;
+  }
 }
 
 .tset{

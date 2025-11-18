@@ -23,7 +23,8 @@
     "next": "15.5.4",
     "next-intl": "^4.4.0",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "sass": "^1.94.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

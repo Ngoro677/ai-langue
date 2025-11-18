@@ -112,6 +112,63 @@ Modifiez les variables CSS dans `src/app/globals.css` :
 
 4. Ajoutez vos clés API dans `.env.local`
 
+## 🤖 Configuration OpenAI pour le Chatbot IA
+
+Le chatbot utilise l'API OpenAI pour fournir des réponses intelligentes basées sur le contenu du portfolio. Voici comment obtenir votre clé API :
+
+### Étape 1 : Créer un compte OpenAI
+
+1. Allez sur [https://platform.openai.com](https://platform.openai.com)
+2. Cliquez sur **"Sign up"** pour créer un compte
+3. Complétez le processus d'inscription (email, mot de passe, vérification)
+
+### Étape 2 : Ajouter des crédits
+
+1. Une fois connecté, allez dans **"Settings"** → **"Billing"**
+2. Cliquez sur **"Add payment method"**
+3. Ajoutez votre carte de crédit ou PayPal
+4. OpenAI offre généralement des crédits gratuits pour commencer ($5-18 selon les promotions)
+
+### Étape 3 : Créer une clé API
+
+1. Allez dans **"API keys"** dans le menu de gauche
+2. Cliquez sur **"Create new secret key"**
+3. Donnez un nom à votre clé (ex: "Portfolio Chatbot")
+4. **IMPORTANT** : Copiez la clé immédiatement, elle ne sera affichée qu'une seule fois !
+5. La clé ressemble à : `sk-proj-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`
+
+### Étape 4 : Configurer dans le projet
+
+1. Créez un fichier `.env.local` à la racine du projet (si ce n'est pas déjà fait) :
+   ```bash
+   cp env.example .env.local
+   ```
+
+2. Ouvrez `.env.local` et ajoutez votre clé API :
+   ```env
+   OPENAI_API_KEY=sk-proj-votre-cle-api-ici
+   ```
+
+3. **IMPORTANT** : Ne commitez JAMAIS ce fichier dans Git ! Il est déjà dans `.gitignore`
+
+### Étape 5 : Redémarrer le serveur
+
+Après avoir ajouté la clé API, redémarrez votre serveur de développement :
+```bash
+npm run dev
+```
+
+### ⚠️ Notes importantes
+
+- **Coûts** : L'utilisation de l'API OpenAI est payante. Le modèle `gpt-4o-mini` utilisé est très économique (environ $0.15 par million de tokens d'entrée)
+- **Sans clé API** : Le chatbot fonctionnera toujours mais utilisera un mode de fallback basique (recherche par mots-clés uniquement)
+- **Sécurité** : Gardez votre clé API secrète. Ne la partagez jamais publiquement
+- **Limites** : Vous pouvez définir des limites de dépenses dans les paramètres OpenAI pour éviter les surprises
+
+### 💡 Alternative gratuite (sans OpenAI)
+
+Si vous ne souhaitez pas utiliser OpenAI, le chatbot fonctionnera toujours avec la recherche par mots-clés améliorée, mais les réponses seront moins intelligentes et contextuelles.
+
 ## 📱 Responsive Design
 
 Le portfolio est entièrement responsive avec :
