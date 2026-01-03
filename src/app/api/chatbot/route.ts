@@ -16,25 +16,7 @@ function normalizeText(text: string): string {
 }
 
 // Créer des liens HTML cliquables vers les sections du portfolio
-function createSectionLink(text: string, sectionId: string, language: 'fr' | 'en' | 'mga' = 'fr'): string {
-  const sectionLabels = {
-    fr: {
-      projet: 'section Projets',
-      techno: 'section Technologies',
-      accueil: 'section Accueil',
-    },
-    en: {
-      projet: 'Projects section',
-      techno: 'Technologies section',
-      accueil: 'Home section',
-    },
-    mga: {
-      projet: 'fizarana Tetikasa',
-      techno: 'fizarana Teknologia',
-      accueil: 'fizarana Fandraisana',
-    },
-  };
-  
+function createSectionLink(text: string, sectionId: string): string {
   // Utiliser un data attribute pour identifier la section et permettre à React de gérer le clic
   return `<a href="#${sectionId}" data-section-id="${sectionId}" class="section-link text-yellow-400 hover:text-yellow-300 underline font-semibold cursor-pointer transition-colors">${text}</a>`;
 }
@@ -522,11 +504,11 @@ const multilingualResponses = {
     capabilities: "Oui, il est très capable ! Sarobidy FIFALIANTSOA est capable de :\n\n• Développer des applications web complètes (frontend et backend)\n• Créer des interfaces utilisateur modernes et responsives\n• Concevoir des maquettes et prototypes avec Figma et Adobe\n• Intégrer des systèmes d'intelligence artificielle (RAG, chatbots)\n• Optimiser les performances des applications\n• Développer des applications mobiles\n• Créer des dashboards et interfaces d'administration\n• Travailler en équipe avec des outils de collaboration\n• Gérer des projets de A à Z\n• Automatiser des processus métier via IA\n\nIl maîtrise React, Next.js, Angular, NestJS, TypeScript, et bien d'autres technologies.",
     language: "Sarobidy FIFALIANTSOA est le plus fort en JavaScript et TypeScript. Il est spécialisé dans ces langages avec 3+ ans d'expérience professionnelle. Il maîtrise également les frameworks modernes basés sur JavaScript comme React, Next.js, Angular, Node.js et NestJS.",
     projets: (lang: 'fr' | 'en' | 'mga' = 'fr') => {
-      const link = createSectionLink('section Projets', 'projet', lang);
+      const link = createSectionLink('section Projets', 'projet');
       return `Voici les projets réalisés par Sarobidy FIFALIANTSOA :\n\n**Projets Web :**\n• Dashboard Ilodesk - Plateforme de gestion avec ReactJS, TypeScript, .NET, SQL Server\n• Ilodesk Platform - Solution complète avec ReactJS, TypeScript, Tailwind\n• Smart Dashboard - Dashboard intelligent avec ReactJS, NestJS, Stripe, Chart.js\n• Digitheque - Application Next.js avec Prisma et Tailwind\n• Portfolio - Site portfolio avec ReactJS, Framer Motion, GSAP\n• Ilomad Website - Site web avec Next.js, PHP, MySQL\n• Sarakodev - Plateforme avec Express, Next.js, PostgreSQL, AWS\n• Raitra - Application ReactJS avec Node.js et PostgreSQL\n• CA2E Platform - Plateforme Laravel avec React et MySQL\n• Congé Manager - Gestionnaire de congés avec ReactJS, Express, PostgreSQL\n• GTA Project - Projet Next.js avec Blender\n\n**Projets Mobile :**\n• Mobilité PNUD - Application mobile avec React Native, Firebase, Maps API\n• CA2E Mobile - Application mobile avec React Native, Express.js, SQLite\n• DEIS Mobile - Application mobile avec Ionic, Angular, SQLite\n• Portfolio Mobile - Application mobile avec React Native\n\n**Projets IA :**\n• AI Project - Projet d'intelligence artificielle avec Python, TensorFlow, OpenCV, FastAPI\n\nCliquez ici pour voir tous les projets : ${link}`;
     },
     technologies: (lang: 'fr' | 'en' | 'mga' = 'fr') => {
-      const link = createSectionLink('section Technologies', 'techno', lang);
+      const link = createSectionLink('section Technologies', 'techno');
       return `Sarobidy FIFALIANTSOA maîtrise les technologies suivantes :\n\n• Frontend : React, Next.js, Angular, TypeScript, Tailwind CSS, Zustand, NgRx\n• Backend : Node.js, NestJS, Express, FastAPI, Laravel, .NET\n• Bases de données : PostgreSQL, MySQL, SQL Server, Redis, Qdrant\n• IA/ML : LangChain, LLM\n• Design : Figma, Adobe XD, Adobe Photoshop, Adobe Illustrator\n• Outils : Git, GitHub, GitLab, Jest, Jira, Docker\n• Cloud : AWS\n• Autres : Docker, Stripe, Chart.js\n\nCliquez ici pour voir toutes les technologies : ${link}`;
     },
     frontendBackend: "Sarobidy FIFALIANTSOA est un développeur Fullstack, ce qui signifie qu'il est compétent à la fois en frontend et en backend. Il excelle particulièrement en :\n\n• Frontend : React, Next.js, Angular avec TypeScript et Tailwind CSS\n• Backend : Node.js, NestJS, Express, FastAPI\n\nIl a une solide expérience dans les deux domaines et peut développer des applications complètes de bout en bout.",
@@ -546,11 +528,11 @@ const multilingualResponses = {
     capabilities: "Yes, he is very capable! Sarobidy FIFALIANTSOA is capable of:\n\n• Developing complete web applications (frontend and backend)\n• Creating modern and responsive user interfaces\n• Designing mockups and prototypes with Figma and Adobe\n• Integrating artificial intelligence systems (RAG, chatbots)\n• Optimizing application performance\n• Developing mobile applications\n• Creating dashboards and administration interfaces\n• Working in teams with collaboration tools\n• Managing projects from A to Z\n• Automating business processes via AI\n\nHe masters React, Next.js, Angular, NestJS, TypeScript, and many other technologies.",
     language: "Sarobidy FIFALIANTSOA is strongest in JavaScript and TypeScript. He specializes in these languages with 3+ years of professional experience. He also masters modern JavaScript-based frameworks like React, Next.js, Angular, Node.js, and NestJS.",
     projets: (lang: 'fr' | 'en' | 'mga' = 'en') => {
-      const link = createSectionLink('Projects section', 'projet', lang);
+      const link = createSectionLink('Projects section', 'projet');
       return `Here are the projects developed by Sarobidy FIFALIANTSOA:\n\n**Web Projects:**\n• Dashboard Ilodesk - Management platform with ReactJS, TypeScript, .NET, SQL Server\n• Ilodesk Platform - Complete solution with ReactJS, TypeScript, Tailwind\n• Smart Dashboard - Smart dashboard with ReactJS, NestJS, Stripe, Chart.js\n• Digitheque - Next.js application with Prisma and Tailwind\n• Portfolio - Portfolio site with ReactJS, Framer Motion, GSAP\n• Ilomad Website - Website with Next.js, PHP, MySQL\n• Sarakodev - Platform with Express, Next.js, PostgreSQL, AWS\n• Raitra - ReactJS application with Node.js and PostgreSQL\n• CA2E Platform - Laravel platform with React and MySQL\n• Congé Manager - Leave manager with ReactJS, Express, PostgreSQL\n• GTA Project - Next.js project with Blender\n\n**Mobile Projects:**\n• Mobilité PNUD - Mobile application with React Native, Firebase, Maps API\n• CA2E Mobile - Mobile application with React Native, Express.js, SQLite\n• DEIS Mobile - Mobile application with Ionic, Angular, SQLite\n• Portfolio Mobile - Mobile application with React Native\n\n**AI Projects:**\n• AI Project - Artificial intelligence project with Python, TensorFlow, OpenCV, FastAPI\n\nClick here to see all projects: ${link}`;
     },
     technologies: (lang: 'fr' | 'en' | 'mga' = 'en') => {
-      const link = createSectionLink('Technologies section', 'techno', lang);
+      const link = createSectionLink('Technologies section', 'techno');
       return `Sarobidy FIFALIANTSOA masters the following technologies:\n\n• Frontend: React, Next.js, Angular, TypeScript, Tailwind CSS, Zustand, NgRx\n• Backend: Node.js, NestJS, Express, FastAPI, Laravel, .NET\n• Databases: PostgreSQL, MySQL, SQL Server, Redis, Qdrant\n• AI/ML: LangChain, LLM\n• Design: Figma, Adobe XD, Adobe Photoshop, Adobe Illustrator\n• Tools: Git, GitHub, GitLab, Jest, Jira, Docker\n• Cloud: AWS\n• Others: Docker, Stripe, Chart.js\n\nClick here to see all technologies: ${link}`;
     },
     frontendBackend: "Sarobidy FIFALIANTSOA is a Fullstack developer, meaning he is competent in both frontend and backend. He particularly excels in:\n\n• Frontend: React, Next.js, Angular with TypeScript and Tailwind CSS\n• Backend: Node.js, NestJS, Express, FastAPI\n\nHe has solid experience in both domains and can develop complete end-to-end applications.",
@@ -570,11 +552,11 @@ const multilingualResponses = {
     capabilities: "Eny, tena afaka izy! Sarobidy FIFALIANTSOA afaka:\n\n• Mamorona application web feno (frontend sy backend)\n• Mamorona interface mpampiasa maoderina sy responsive\n• Mamorona maquette sy prototype amin'ny Figma sy Adobe\n• Mampiditra rafitra IA (RAG, chatbots)\n• Manatsara ny performance amin'ny application\n• Mamorona application mobile\n• Mamorona dashboard sy interface fitantanana\n• Miara-miasa amin'ny fitaovana fiaraha-miasa\n• Mitantana tetikasa hatrany A ka Z\n• Mampandeha ny fizotran'ny orinasa amin'ny alalan'ny IA\n\nMahay React, Next.js, Angular, NestJS, TypeScript, ary teknologia hafa maro.",
     language: "Sarobidy FIFALIANTSOA dia matanjaka indrindra amin'ny JavaScript sy TypeScript. Manokana amin'ireo fiteny ireo izy miaraka amin'ny traikefa ara-piasana 3+ taona. Mahay koa ny frameworks maoderina miorina amin'ny JavaScript toy ny React, Next.js, Angular, Node.js, ary NestJS.",
     projets: (lang: 'fr' | 'en' | 'mga' = 'mga') => {
-      const link = createSectionLink('fizarana Tetikasa', 'projet', lang);
+      const link = createSectionLink('fizarana Tetikasa', 'projet');
       return `Ireto ny tetikasa namboarin'i Sarobidy FIFALIANTSOA:\n\n**Tetikasa Web:**\n• Dashboard Ilodesk - Platform fitantanana miaraka amin'ny ReactJS, TypeScript, .NET, SQL Server\n• Ilodesk Platform - Vahaolana feno miaraka amin'ny ReactJS, TypeScript, Tailwind\n• Smart Dashboard - Dashboard manan-tsaina miaraka amin'ny ReactJS, NestJS, Stripe, Chart.js\n• Digitheque - Application Next.js miaraka amin'ny Prisma sy Tailwind\n• Portfolio - Tranokala portfolio miaraka amin'ny ReactJS, Framer Motion, GSAP\n• Ilomad Website - Tranokala miaraka amin'ny Next.js, PHP, MySQL\n• Sarakodev - Platform miaraka amin'ny Express, Next.js, PostgreSQL, AWS\n• Raitra - Application ReactJS miaraka amin'ny Node.js sy PostgreSQL\n• CA2E Platform - Platform Laravel miaraka amin'ny React sy MySQL\n• Congé Manager - Mpitantana fialan-tsasatra miaraka amin'ny ReactJS, Express, PostgreSQL\n• GTA Project - Tetikasa Next.js miaraka amin'ny Blender\n\n**Tetikasa Mobile:**\n• Mobilité PNUD - Application mobile miaraka amin'ny React Native, Firebase, Maps API\n• CA2E Mobile - Application mobile miaraka amin'ny React Native, Express.js, SQLite\n• DEIS Mobile - Application mobile miaraka amin'ny Ionic, Angular, SQLite\n• Portfolio Mobile - Application mobile miaraka amin'ny React Native\n\n**Tetikasa IA:**\n• AI Project - Tetikasa IA miaraka amin'ny Python, TensorFlow, OpenCV, FastAPI\n\nTsindrio eto ho hitanao ny tetikasa rehetra: ${link}`;
     },
     technologies: (lang: 'fr' | 'en' | 'mga' = 'mga') => {
-      const link = createSectionLink('fizarana Teknologia', 'techno', lang);
+      const link = createSectionLink('fizarana Teknologia', 'techno');
       return `Sarobidy FIFALIANTSOA mahay ireo teknologia manaraka:\n\n• Frontend: React, Next.js, Angular, TypeScript, Tailwind CSS, Zustand, NgRx\n• Backend: Node.js, NestJS, Express, FastAPI, Laravel, .NET\n• Bazy angona: PostgreSQL, MySQL, SQL Server, Redis, Qdrant\n• IA/ML: LangChain, LLM\n• Design: Figma, Adobe XD, Adobe Photoshop, Adobe Illustrator\n• Fitaovana: Git, GitHub, GitLab, Jest, Jira, Docker\n• Cloud: AWS\n• Hafa: Docker, Stripe, Chart.js\n\nTsindrio eto ho hitanao ny teknologia rehetra: ${link}`;
     },
     frontendBackend: "Sarobidy FIFALIANTSOA dia mpamorona Fullstack, izany hoe mahay amin'ny frontend sy backend. Matanjaka indrindra amin'ny:\n\n• Frontend: React, Next.js, Angular miaraka amin'ny TypeScript sy Tailwind CSS\n• Backend: Node.js, NestJS, Express, FastAPI\n\nManana traikefa mafy amin'ny sehatra roa izy ary afaka mamorona application feno hatrany A ka Z.",
