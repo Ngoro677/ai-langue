@@ -107,12 +107,12 @@ export default function TechSkills() {
   const [circuits, setCircuits] = useState<Circuit[]>([]);
 
   useEffect(() => {
-    // Generate random circuits
-    const newCircuits = Array.from({ length: 30 }, (_, i) => ({
+    // Generate professional random circuits with better distribution
+    const newCircuits = Array.from({ length: 50 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
-      width: Math.random() * 150 + 50,
+      width: Math.random() * 200 + 80, // Longer circuits for better visual
       rotation: Math.random() * 360,
       type: Math.floor(Math.random() * 3)
     }));
@@ -191,7 +191,7 @@ export default function TechSkills() {
     <div
       onMouseEnter={() => setHoveredCard(`${skill.name}-${index}`)}
       onMouseLeave={() => setHoveredCard(null)}
-      className="relative bg-transparent rounded-lg p-2 md:p-5 border border-gray-700 hover:border-yellow-500 transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-yellow-500/20"
+      className="relative ilo bg-transparent rounded-lg p-2 md:p-5 border border-gray-700 hover:border-yellow-500 transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-yellow-500/20"
     >
       <div className="flex items-center justify-between mb-2 md:mb-3">
         <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center">
@@ -221,9 +221,9 @@ export default function TechSkills() {
         <span className="text-white font-semibold text-sm md:text-lg">{skill.level}%</span>
       </div>
       <h3 className="text-white font-bold text-xs md:text-base mb-2 md:mb-3 leading-tight">{skill.name}</h3>
-      <div className="w-full bg-gray-700 rounded-full h-1 md:h-1.5 overflow-hidden">
+      <div className="w-full ilo bg-gray-700 rounded-full h-0.5 overflow-hidden">
         <div
-          className={`h-full transition-all duration-500 rounded-full ${
+          className={`h-full ilo transition-all duration-500 rounded-full ${
             hoveredCard === `${skill.name}-${index}`
               ? 'bg-yellow-500' 
               : 'bg-gray-400'
@@ -247,14 +247,14 @@ export default function TechSkills() {
   );
 
   const InfoBox = ({ title, description }: { title: string; description: string }) => (
-    <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-6 border border-gray-700">
+    <div className="ilo rounded-lg p-6 border-1 border-gray-700">
       <h3 className="text-white text-xl font-bold mb-3">{title}</h3>
       <p className="text-gray-300 leading-relaxed text-sm">{description}</p>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-8 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 py-8 relative overflow-hidden">
       {/* Network Background Animation */}
       <NetworkBackground 
         nodeCount={45}
@@ -263,73 +263,132 @@ export default function TechSkills() {
         nodeColor="#faa81b6c"
       />
       
-      {/* Animated Circuit Background */}
-      <div className="absolute inset-0 opacity-20 pointer-events-none z-0">
-        <svg className="w-full h-full">
+      {/* Animated Circuit Background - Professional Style */}
+      <div className="absolute inset-0 opacity-30 pointer-events-none z-0">
+        <svg className="w-full h-full" style={{ filter: 'blur(0.5px)' }}>
+          <defs>
+            <linearGradient id="circuitGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.8" />
+              <stop offset="50%" stopColor="#f59e0b" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="#fbbf24" stopOpacity="0.4" />
+            </linearGradient>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
           {circuits.map((circuit) => (
-            <g key={circuit.id}>
+            <g key={circuit.id} style={{ 
+              transform: `translate(${circuit.x}%, ${circuit.y}%) rotate(${circuit.rotation}deg)`,
+              transition: 'opacity 0.3s ease, transform 0.3s ease'
+            }}>
               {circuit.type === 0 && (
-                <g
-                  className={`transition-all duration-1000 ${
-                    hoveredCard ? 'animate-pulse' : ''
-                  }`}
-                  style={{
-                    transform: `translate(${circuit.x}%, ${circuit.y}%) rotate(${circuit.rotation}deg)`
-                  }}
-                >
+                <g className="circuit-line">
                   <line
                     x1="0"
                     y1="0"
                     x2={circuit.width}
                     y2="0"
-                    stroke="#fbbf24"
+                    stroke="url(#circuitGradient)"
                     strokeWidth="2"
-                    className="animate-pulse"
+                    strokeLinecap="round"
+                    filter="url(#glow)"
+                    opacity="0.6"
+                    className="circuit-animate"
                   />
-                  <circle cx={circuit.width} cy="0" r="4" fill="#fbbf24" />
+                  <circle 
+                    cx={circuit.width} 
+                    cy="0" 
+                    r="5" 
+                    fill="url(#circuitGradient)"
+                    filter="url(#glow)"
+                    opacity="0.8"
+                    className="circuit-pulse"
+                  />
+                  <circle 
+                    cx="0" 
+                    cy="0" 
+                    r="3" 
+                    fill="#fbbf24"
+                    opacity="0.9"
+                    className="circuit-pulse"
+                  />
                 </g>
               )}
               {circuit.type === 1 && (
-                <g
-                  className={`transition-all duration-1000 ${
-                    hoveredCard ? 'animate-pulse' : ''
-                  }`}
-                  style={{
-                    transform: `translate(${circuit.x}%, ${circuit.y}%) rotate(${circuit.rotation}deg)`
-                  }}
-                >
+                <g className="circuit-path">
                   <path
                     d={`M 0 0 L ${circuit.width / 2} 0 L ${circuit.width / 2} ${circuit.width / 2} L ${circuit.width} ${circuit.width / 2}`}
-                    stroke="#fbbf24"
+                    stroke="url(#circuitGradient)"
                     strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                     fill="none"
+                    filter="url(#glow)"
+                    opacity="0.6"
+                    className="circuit-animate"
                   />
                   <rect
-                    x={circuit.width - 8}
-                    y={circuit.width / 2 - 8}
-                    width="16"
-                    height="16"
+                    x={circuit.width - 10}
+                    y={circuit.width / 2 - 10}
+                    width="20"
+                    height="20"
+                    fill="url(#circuitGradient)"
+                    filter="url(#glow)"
+                    opacity="0.7"
+                    rx="2"
+                    className="circuit-pulse"
+                  />
+                  <circle 
+                    cx="0" 
+                    cy="0" 
+                    r="4" 
                     fill="#fbbf24"
+                    opacity="0.9"
+                    className="circuit-pulse"
                   />
                 </g>
               )}
               {circuit.type === 2 && (
-                <g
-                  className={`transition-all duration-1000 ${
-                    hoveredCard ? 'animate-pulse' : ''
-                  }`}
-                  style={{
-                    transform: `translate(${circuit.x}%, ${circuit.y}%) rotate(${circuit.rotation}deg)`
-                  }}
-                >
-                  <circle cx="0" cy="0" r="6" fill="#fbbf24" />
+                <g className="circuit-node">
+                  <circle 
+                    cx="0" 
+                    cy="0" 
+                    r="8" 
+                    fill="url(#circuitGradient)"
+                    filter="url(#glow)"
+                    opacity="0.8"
+                    className="circuit-pulse"
+                  />
+                  <circle 
+                    cx="0" 
+                    cy="0" 
+                    r="4" 
+                    fill="#fbbf24"
+                    opacity="1"
+                  />
                   <line
-                    x1="6"
+                    x1="8"
                     y1="0"
                     x2={circuit.width}
                     y2="0"
-                    stroke="#fbbf24"
+                    stroke="url(#circuitGradient)"
                     strokeWidth="2"
+                    strokeLinecap="round"
+                    filter="url(#glow)"
+                    opacity="0.6"
+                    className="circuit-animate"
+                  />
+                  <circle 
+                    cx={circuit.width} 
+                    cy="0" 
+                    r="4" 
+                    fill="#fbbf24"
+                    opacity="0.9"
+                    className="circuit-pulse"
                   />
                 </g>
               )}
@@ -337,92 +396,6 @@ export default function TechSkills() {
           ))}
         </svg>
       </div>
-
-      <ScrollReveal direction="down" delay={0.2} duration={0.8}>
-        <h1 className="text-white max-w-7xl mx-auto px-6 mt-12 text-3xl font-bold mb-12 relative z-10">
-          {t('techno.technologies')}
-        </h1>
-      </ScrollReveal>
-
-        {/* Scrolling Technologies Section */}
-        <div className="relative z-10">
-          {/* Masque de dégradé aux bords pour effet fade */}
-          <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-gray-900 via-gray-900/80 to-transparent z-10 pointer-events-none"></div>
-          <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-gray-900 via-gray-900/80 to-transparent z-10 pointer-events-none"></div>
-          
-          <div className="relative -mt-12 overflow-hidden py-12">
-            {/* Animation de défilement infini */}
-            <div className="flex animate-scroll space-x-6 w-max">
-              {/* Première série */}
-              {technologies.map((tech, index) => (
-                <div
-                  key={`first-${index}`}
-                  className="flex-shrink-0 w-17 border-2 border-gary-500 bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-700 hover:border-yellow-500 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-yellow-500/20 group relative"
-                >
-                  {/* Tooltip */}
-                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs font-semibold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-300 z-50 shadow-lg border border-gray-700">
-                    {tech.name}
-                    {/* Flèche du tooltip */}
-                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
-                      <div className="w-2 h-2 bg-gray-900 border-r border-b border-gray-700 transform rotate-45"></div>
-                    </div>
-                  </div>
-                  <img
-                    src={tech.icon}
-                    alt={tech.name}
-                    className="w-8 h-8 object-contain group-hover:scale-110 transition-transform duration-300"
-                    loading="lazy"
-                    onError={(e) => {
-                      // Fallback si l'image ne charge pas
-                      const target = e.target as HTMLImageElement;
-                      const parent = target.parentElement;
-                      if (parent) {
-                        target.style.display = 'none';
-                        const fallback = document.createElement('div');
-                        fallback.className = 'text-white text-xs font-semibold text-center';
-                        fallback.textContent = tech.name.substring(0, 3);
-                        parent.appendChild(fallback);
-                      }
-                    }}
-                  />
-                </div>
-              ))}
-              {/* Deuxième série pour effet infini */}
-              {technologies.map((tech, index) => (
-                <div
-                  key={`second-${index}`}
-                  className="flex-shrink-0 w-17 h-17 bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-700 hover:border-yellow-500 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-yellow-500/20 group relative"
-                >
-                  {/* Tooltip */}
-                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs font-semibold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-300 z-50 shadow-lg border border-gray-700">
-                    {tech.name}
-                    {/* Flèche du tooltip */}
-                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
-                      <div className="w-2 h-2 bg-gray-900 border-r border-b border-gray-700 transform rotate-45"></div>
-                    </div>
-                  </div>
-                  <img
-                    src={tech.icon}
-                    alt={tech.name}
-                    className="w-8 h-8 object-contain group-hover:scale-110 transition-transform duration-300"
-                    loading="lazy"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      const parent = target.parentElement;
-                      if (parent) {
-                        target.style.display = 'none';
-                        const fallback = document.createElement('div');
-                        fallback.className = 'text-white text-xs font-semibold text-center';
-                        fallback.textContent = tech.name.substring(0, 3);
-                        parent.appendChild(fallback);
-                      }
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-6">
         {/* Header */}

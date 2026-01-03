@@ -9,7 +9,6 @@ import Projet from '@/components/Projet';
 import Techno from '@/components/Techno';
 import LoadingScreen from '@/components/LoadingScreen';
 import Chatbot from '@/components/Chatbot';
-import StickyCursor from '@/components/StickyCursor';
 
 // Composant principal
 export default function Home() {
@@ -49,8 +48,7 @@ export default function Home() {
       {isLoading && <LoadingScreen onComplete={handleLoadingComplete} />}
       {!isLoading && (
         <div className="min-h-screen animate-fadeIn">
-          <Header ref={stickyElement} />
-          <StickyCursor stickyElement={stickyElement as React.RefObject<HTMLDivElement>} />
+          <Header />
           <main className=" md:pb-0">
             <section id="accueil">
               <Accueil />

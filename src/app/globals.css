@@ -13,14 +13,6 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
   line-height: 1.6;
   background: rgb(37, 37, 37);
-  cursor: none; /* Masquer le curseur par défaut pour utiliser le curseur personnalisé */
-}
-
-/* Réafficher le curseur sur les écrans tactiles */
-@media (hover: none) {
-  body {
-    cursor: auto;
-  }
 }
 
 .tset{
@@ -125,4 +117,78 @@ body {
 
 .animate-shimmer {
   animation: shimmer 2s infinite;
+}
+
+/* Circuit Animation Styles */
+@keyframes circuitFlow {
+  0% {
+    stroke-dasharray: 0, 1000;
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    stroke-dasharray: 1000, 0;
+    opacity: 0.3;
+  }
+}
+
+@keyframes circuitPulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+.circuit-animate {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: circuitFlow 4s ease-in-out infinite;
+}
+
+.circuit-pulse {
+  animation: circuitPulse 2s ease-in-out infinite;
+}
+
+
+
+
+.bouton-ilo {
+  padding: 0.6rem 1.6rem;
+  border-radius: 0 0.5rem 0.5rem 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.ilo {
+  border-radius: 0 1rem 1rem 1rem;
+  transition: all 300ms ease;
+}
+
+.ilo:hover {
+  transform: translateY(0.5rem);
+}
+
+.bouton-ilo:hover {
+  transform: translateY(0.5rem);
+}
+
+.bouton-ilo:active {
+  transform: translateY(0);
+}
+
+/* Variante avec icône + automatique */
+.bouton-ilo-avec-icone::before {
+  content: "+";
+  font-size: 1.25rem;
+  line-height: 1;
 }
