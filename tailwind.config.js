@@ -15,6 +15,7 @@ module.exports = {
       },
       fontFamily: {
         'sans': ['Inter', 'system-ui', 'sans-serif'],
+        'mono': ['Geist Mono', 'Courier New', 'Courier', 'monospace'],
       },
       animation: {
         'fadeInUp': 'fadeInUp 0.6s ease-out',

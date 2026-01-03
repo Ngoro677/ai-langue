@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import MobileNavigation from '@/components/MobileNavigation';
@@ -12,7 +12,6 @@ import Chatbot from '@/components/Chatbot';
 
 // Composant principal
 export default function Home() {
-  const stickyElement = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(() => {
     // Vérifier si c'est la première visite
     if (typeof window !== 'undefined') {

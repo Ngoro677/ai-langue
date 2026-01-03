@@ -1,17 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import NetworkBackground from './NetworkBackground';
 import ScrollReveal from './ScrollReveal';
 import StaggerReveal from './StaggerReveal';
-
-interface Circuit {
-  id: number;
-  x: number;
-  y: number;
-  width: number;
-  rotation: number;
-  type: number;
-}
 
 interface Skill {
   name: string;
@@ -19,11 +10,6 @@ interface Skill {
   icon: string;
   color: string;
   iconType?: 'local' | 'cdn' | 'emoji';
-}
-
-interface Technology {
-  name: string;
-  icon: string;
 }
 
 // Fonction helper pour obtenir l'icône d'une technologie
@@ -104,45 +90,6 @@ const getTechIcon = (techName: string): { icon: string; type: 'local' | 'cdn' | 
 export default function TechSkills() {
   const { t } = useI18n();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
-  const [circuits, setCircuits] = useState<Circuit[]>([]);
-
-  useEffect(() => {
-    // Generate professional random circuits with better distribution
-    const newCircuits = Array.from({ length: 50 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      width: Math.random() * 200 + 80, // Longer circuits for better visual
-      rotation: Math.random() * 360,
-      type: Math.floor(Math.random() * 3)
-    }));
-    setCircuits(newCircuits);
-  }, []);
-
-  // Liste complète des technologies avec leurs icônes
-  const technologies: Technology[] = [
-    { name: "Laravel", icon: "https://cdn.simpleicons.org/laravel/FF2D20" },
-   { name: "React", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" },
-    { name: "Angular", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/angularjs/angularjs-original.svg" },
-    { name: "Node.js", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" },
-    { name: "JavaScript", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" },
-    { name: "Docker", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" },
-    { name: "PostgreSQL", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" },
-    { name: "MySQL", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original.svg" },
-    { name: "Python", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" },
-    { name: "n8n", icon: "https://cdn.simpleicons.org/n8n/EF4444" },
-    { name: ".NET", icon: "https://cdn.simpleicons.org/dotnet/512BD4" },
-    { name: "SQL Server", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/microsoftsqlserver/microsoftsqlserver-plain.svg" },
-    { name: "LangChain", icon: "https://cdn.simpleicons.org/langchain/1C3C3C" },
-    { name: "LLM", icon: "https://cdn.simpleicons.org/openai/412991" },
-   { name: "TypeScript", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" },
-    { name: "Tailwind CSS", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-original.svg" },
-    { name: "HTML5", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" },
-    { name: "CSS3", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" },
-    { name: "GitLab", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/gitlab/gitlab-original.svg" },
-    { name: "Redis", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/redis/redis-original.svg" },
-    { name: "Figma", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/figma/figma-original.svg" }
-  ];
 
   const frontendSkills: Skill[] = [
     { name: 'HTML', level: 100, icon: getTechIcon('HTML').icon, color: 'from-orange-500 to-orange-600', iconType: getTechIcon('HTML').type },
@@ -188,11 +135,14 @@ export default function TechSkills() {
   ];
 
   const SkillCard = ({ skill, index }: { skill: Skill; index: number }) => (
+   
+   
     <div
       onMouseEnter={() => setHoveredCard(`${skill.name}-${index}`)}
       onMouseLeave={() => setHoveredCard(null)}
       className="relative ilo bg-transparent rounded-lg p-2 md:p-5 border border-gray-700 hover:border-yellow-500 transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:shadow-yellow-500/20"
     >
+      
       <div className="flex items-center justify-between mb-2 md:mb-3">
         <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center">
           {skill.iconType === 'emoji' ? (
@@ -257,146 +207,12 @@ export default function TechSkills() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 py-8 relative overflow-hidden">
       {/* Network Background Animation */}
       <NetworkBackground 
-        nodeCount={45}
-        connectionDistance={160}
+        nodeCount={40}
+        connectionDistance={150}
         color="#fbbf24"
         nodeColor="#faa81b6c"
       />
       
-      {/* Animated Circuit Background - Professional Style */}
-      <div className="absolute inset-0 opacity-30 pointer-events-none z-0">
-        <svg className="w-full h-full" style={{ filter: 'blur(0.5px)' }}>
-          <defs>
-            <linearGradient id="circuitGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.8" />
-              <stop offset="50%" stopColor="#f59e0b" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="#fbbf24" stopOpacity="0.4" />
-            </linearGradient>
-            <filter id="glow">
-              <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-              <feMerge>
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="SourceGraphic"/>
-              </feMerge>
-            </filter>
-          </defs>
-          {circuits.map((circuit) => (
-            <g key={circuit.id} style={{ 
-              transform: `translate(${circuit.x}%, ${circuit.y}%) rotate(${circuit.rotation}deg)`,
-              transition: 'opacity 0.3s ease, transform 0.3s ease'
-            }}>
-              {circuit.type === 0 && (
-                <g className="circuit-line">
-                  <line
-                    x1="0"
-                    y1="0"
-                    x2={circuit.width}
-                    y2="0"
-                    stroke="url(#circuitGradient)"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    filter="url(#glow)"
-                    opacity="0.6"
-                    className="circuit-animate"
-                  />
-                  <circle 
-                    cx={circuit.width} 
-                    cy="0" 
-                    r="5" 
-                    fill="url(#circuitGradient)"
-                    filter="url(#glow)"
-                    opacity="0.8"
-                    className="circuit-pulse"
-                  />
-                  <circle 
-                    cx="0" 
-                    cy="0" 
-                    r="3" 
-                    fill="#fbbf24"
-                    opacity="0.9"
-                    className="circuit-pulse"
-                  />
-                </g>
-              )}
-              {circuit.type === 1 && (
-                <g className="circuit-path">
-                  <path
-                    d={`M 0 0 L ${circuit.width / 2} 0 L ${circuit.width / 2} ${circuit.width / 2} L ${circuit.width} ${circuit.width / 2}`}
-                    stroke="url(#circuitGradient)"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    fill="none"
-                    filter="url(#glow)"
-                    opacity="0.6"
-                    className="circuit-animate"
-                  />
-                  <rect
-                    x={circuit.width - 10}
-                    y={circuit.width / 2 - 10}
-                    width="20"
-                    height="20"
-                    fill="url(#circuitGradient)"
-                    filter="url(#glow)"
-                    opacity="0.7"
-                    rx="2"
-                    className="circuit-pulse"
-                  />
-                  <circle 
-                    cx="0" 
-                    cy="0" 
-                    r="4" 
-                    fill="#fbbf24"
-                    opacity="0.9"
-                    className="circuit-pulse"
-                  />
-                </g>
-              )}
-              {circuit.type === 2 && (
-                <g className="circuit-node">
-                  <circle 
-                    cx="0" 
-                    cy="0" 
-                    r="8" 
-                    fill="url(#circuitGradient)"
-                    filter="url(#glow)"
-                    opacity="0.8"
-                    className="circuit-pulse"
-                  />
-                  <circle 
-                    cx="0" 
-                    cy="0" 
-                    r="4" 
-                    fill="#fbbf24"
-                    opacity="1"
-                  />
-                  <line
-                    x1="8"
-                    y1="0"
-                    x2={circuit.width}
-                    y2="0"
-                    stroke="url(#circuitGradient)"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    filter="url(#glow)"
-                    opacity="0.6"
-                    className="circuit-animate"
-                  />
-                  <circle 
-                    cx={circuit.width} 
-                    cy="0" 
-                    r="4" 
-                    fill="#fbbf24"
-                    opacity="0.9"
-                    className="circuit-pulse"
-                  />
-                </g>
-              )}
-            </g>
-          ))}
-        </svg>
-      </div>
-
       <div className="relative z-10 max-w-7xl mx-auto px-6">
         {/* Header */}
         <ScrollReveal direction="up" delay={0.3} duration={0.8}>

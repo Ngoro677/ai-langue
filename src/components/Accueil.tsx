@@ -17,7 +17,7 @@ export default function Accueil() {
       <div className="max-w-7xl mx-auto px-6 w-full">
         <div className="grid grid-cols-1 text-center sm:text-start lg:grid-cols-2 gap-12 items-center">
           {/* Left side - Text content */}
-          <div className="text-white space-y-6">
+          <div className="text-white -mt-20 md:-mt-6 space-y-6">
             {/* Introduction line */}
             <ScrollReveal direction="right" delay={0.2} duration={0.8}>
               <div className="flex ilo justify-center sm:justify-start items-center space-x-3">
@@ -28,7 +28,7 @@ export default function Accueil() {
 
             {/* Name */}
             <ScrollReveal direction="up" delay={0.4} duration={1} distance={60}>
-              <h1 className="text-5xl ilo lg:text-6xl font-bold leading-tight whitespace-pre-line">
+              <h1 className="text-4xl ilo lg:text-6xl font-bold leading-tight whitespace-pre-line">
                 {t('accueil.nom')}
               </h1>
             </ScrollReveal>
