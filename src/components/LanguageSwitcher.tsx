@@ -12,7 +12,7 @@ export default function LanguageSwitcher() {
   ];
 
   return (
-    <div className="fixed z-50 sm:bottom-12 bottom-26 sm:right-12 right-3 flex space-x-2 bg-gray-900/80 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
+    <div className="fixed ilo border-1 border-white z-50 sm:bottom-12 bottom-26 sm:right-12 right-3 flex space-x-2 bg-gray-900/80 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
       {languages.map((lang) => (
         <button
           key={lang.code}

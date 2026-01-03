@@ -126,13 +126,13 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="border border-white bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-b-2xl shadow-2xl w-full max-w-2xl mx-auto max-h-[90vh] overflow-hidden flex flex-col pointer-events-auto">
+            <div className="border ilo border-white bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-b-2xl shadow-2xl w-full max-w-2xl mx-auto max-h-[90vh] overflow-hidden flex flex-col pointer-events-auto">
               {/* Header avec image de profil */}
               <div className="relative bg-gradient-to-b from-gray-800 to-gray-900 pt-6 pb-4">
                 {/* Bouton fermer */}
                 <button
                   onClick={onClose}
-                  className="absolute cursor-pointer top-4 right-4 w-10 h-10 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors z-10"
+                  className="absolute cursor-pointer top-4 right-4 w-10 h-10 bg-gray-700 hover:bg-gray-600 ilo flex items-center justify-center transition-colors z-10"
                   aria-label="Fermer"
                 >
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -162,9 +162,9 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
               {/* Contenu scrollable */}
               <div className="flex-1 overflow-y-auto px-6 pb-6">
                 {/* Informations du profil */}
-                <div className="mb-6 border border-gray-700 rounded-lg p-4 bg-gray-800/50">
+                <div className="mb-6 ilo border border-gray-700 rounded-lg p-4 bg-gray-800/50">
                   <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                    <div className="w-12 h-12 ilo overflow-hidden flex-shrink-0">
                       <img
                         src="/images/bidy.png"
                         alt="Profile"
@@ -185,7 +185,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                 </div>
 
                 {/* Langues */}
-                <div className="mb-6 border border-gray-700 rounded-lg p-4 bg-gray-800/50">
+                <div className="mb-6 ilo border border-gray-700 rounded-lg p-4 bg-gray-800/50">
                   <div className="flex items-start space-x-4">
                     <div className="text-2xl">🌐</div>
                     <div className="flex-1">
@@ -205,7 +205,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.1 }}
-                        className="border border-gray-700 rounded-lg p-4 bg-gray-800/50 hover:bg-gray-800/70 transition-colors"
+                        className="border ilo border-gray-700 rounded-lg p-4 bg-gray-800/50 hover:bg-gray-800/70 transition-colors"
                       >
                         <div className="flex items-start space-x-4">
                           <div className="text-2xl flex-shrink-0">{diploma.icon}</div>
@@ -237,7 +237,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: (diplomas.length + index) * 0.1 }}
-                        className="border border-gray-700 rounded-lg p-4 bg-gray-800/50 hover:bg-gray-800/70 transition-colors"
+                        className="border ilo border-gray-700 rounded-lg p-4 bg-gray-800/50 hover:bg-gray-800/70 transition-colors"
                       >
                         <h4 className="text-white font-semibold mb-1">{exp.title}</h4>
                         <p className="text-yellow-400 text-sm mb-1">{exp.company}</p>
@@ -249,7 +249,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                 </div>
 
                 {/* Informations de contact */}
-                <div className="border border-gray-700 rounded-lg p-4 bg-gray-800/50 mb-6">
+                <div className="border ilo border-gray-700 rounded-lg p-4 bg-gray-800/50 mb-6">
                   <h3 className="text-white font-semibold mb-4">Contact</h3>
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center space-x-3 text-gray-300">
@@ -293,7 +293,7 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                       window.open('/cv.pdf', '_blank');
                     }
                   }}
-                  className="w-full border-2 border-yellow-400 hover:border-3 cursor-pointer text-yellow-400 font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center space-x-2"
+                  className="w-full bouton-ilo border-2 border-yellow-400 hover:border-3 cursor-pointer text-yellow-400 font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center justify-center space-x-2"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

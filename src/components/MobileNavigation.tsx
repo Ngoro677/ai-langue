@@ -127,7 +127,7 @@ export default function MobileNavigation() {
               <button
                 key={item.id}
                 onClick={item.onClick}
-                className={`flex flex-col items-center justify-center space-y-1.5 min-w-[64px] py-2 rounded-2xl transition-all duration-300 relative ${
+                className={`flex flex-col cursor-pointer ilo items-center justify-center space-y-1.5 min-w-[64px] py-2 rounded-2xl transition-all duration-300 relative ${
                   isActive
                     ? 'bg-yellow-400 text-gray-900'
                     : 'text-gray-400 hover:text-white'

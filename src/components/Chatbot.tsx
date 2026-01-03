@@ -215,7 +215,7 @@ export default function Chatbot() {
       <div className="fixed cursor-pointer z-[9999] sm:bottom-12 bottom-26 sm:left-12 left-3">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="w-12 h-12 cursor-pointer flex items-center justify-center rounded-full bg-gray-900/80 backdrop-blur-sm border-2 border-white hover:border-yellow-400 shadow-lg transition-all duration-300 hover:scale-110 group relative overflow-visible"
+          className="w-12 ilo h-12 cursor-pointer flex items-center justify-center rounded-full bg-gray-900/80 backdrop-blur-sm border-2 border-white hover:border-yellow-400 shadow-lg transition-all duration-300 hover:scale-110 group relative overflow-visible"
           aria-label="Ouvrir le chatbot"
         >
           {/* Tooltip */}
@@ -226,7 +226,20 @@ export default function Chatbot() {
               <div className="w-2 h-2 bg-gray-900 border-r border-b border-gray-700 transform rotate-45"></div>
             </div>
           </div>
-          <p className="text-white text-2xl font-bold group-hover:text-yellow-400 transition-colors">?</p>
+          <svg 
+            className="w-6 h-6 text-white group-hover:text-yellow-400 transition-colors" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" 
+            />
+          </svg>
         </button>
       </div>
 

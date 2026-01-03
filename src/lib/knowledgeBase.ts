@@ -1,19 +1,22 @@
 // Base de connaissances du portfolio pour le système RAG
 
 export const portfolioKnowledge = `
-# Portfolio de Fifaliantsoa Sarobidy
+# Portfolio de Sarobidy FIFALIANTSOA
 
 ## Informations Personnelles
-- Nom: Fifaliantsoa Sarobidy
-- Profession: Développeur Web et Mobile Full-stack
-- Titre: Développeur Web et Mobile
+- Nom complet: Sarobidy FIFALIANTSOA
+- Profession: Développeur Fullstack
+- Titre: DEVELOPPEUR FULLSTACK
 - Localisation: Madagascar, Fianarantsoa
 - Téléphone: +261 34 46 536 09
 - Email: sarobidy.fifaliantsoa@ilomad.com
+- LinkedIn: in Fifaliantoa sarobidy
+- GitHub: Ngoro677
+- Website: sarobidy-dev-vercel.app
 - CV: Un CV est disponible en format PDF et peut être téléchargé depuis le portfolio
 
 ## Description Professionnelle
-Fifaliantsoa Sarobidy est un développeur JavaScript, Designeur et IA avec plus de 4 ans d'expériences, basé à Madagascar. Il est spécialisé dans le développement d'applications web et mobiles modernes.
+Sarobidy FIFALIANTSOA est un développeur Fullstack passionné avec 3+ ans d'expérience en développement web et mobile, spécialisé dans la création de solutions numériques innovantes. Expert en développement frontend et backend, avec une solide expérience en intégration d'Intelligence Artificielle et automatisation de processus métier. Il est également UI/UX Designer et possède des compétences en design d'interfaces utilisateur.
 
 ## Compétences Techniques
 
@@ -69,18 +72,49 @@ Il est capable de:
 - Développer des applications mobiles
 - Créer des dashboards et interfaces d'administration
 
-## Expérience Professionnelle
-- Développeur Full-stack chez Ilomad (2024 - Présent): Développement d'applications web et mobiles avec les dernières technologies
-- Développeur Frontend en Freelance (2022 - 2024): Création d'interfaces utilisateur modernes et responsives avec les dernières technologies
-- Plus de 4 ans d'expérience dans le développement web et mobile
-- Expertise en JavaScript et frameworks modernes
-- Expérience en design UI/UX
-- Connaissance des architectures modernes et des meilleures pratiques de développement
+## Expérience Professionnelle Détaillée
 
-## Diplômes et Certifications
-- Master en Informatique Générale (2025) - ENI - École Nationale d'Informatique, Madagascar
-- Certification Responsive Web Design (Avril 2025) - OpenClassrooms
-- Certification Javascript (Juillet 2024) - Free Codecamp
+### DEVELOPPEUR FULLSTACK & UI/UX Designer
+**ILOMAD** | Mai 2024 - Novembre 2025 (1 an et 6 mois)
+- Développement d'application de gestion des congés avec Smart-RH (React, Node.js, PostgreSQL)
+- Création d'application web de gestion de ticketing (Ilodesk) avec intégration IA
+- Design et optimisation SEO du site web vitrine d'Ilomad
+- Automatisation des gestions de congés via IA (prompts et Intelligence Artificielle)
+- Facilitation de l'UX pour la gestion des ressources humaines (Smart-RH)
+- Création de logo et développement de landing page pour Smart-RH
+- Développement d'applications web et mobile de gestion de pointage
+- Intégration d'API IA pour la gestion de ticketing (Ilodesk)
+- **Stacks utilisées:** NodeJS, Express, FastAPI, PostgreSQL, React, React-Native, Next.js, Zustand, Socket.IO, Docker, LLM, LangChain, Qdrant, Adobe XD, Figma, Adobe Photoshop
+- **Résultats:** Amélioration de 40% de l'efficacité de gestion des congés. Réduction de 60% du temps de traitement des tickets grâce à l'IA.
+
+### DEVELOPPEUR FULLSTACK Freelance
+**Takalou Sarl** | Mars 2023 - Avril 2024 (1 an et 1 mois)
+- Développement d'application web pour la sécurisation des tâches
+- Création d'application web de gestion de suivi des tâches
+- Développement d'application web pour la gestion des tâches
+- **Stacks utilisées:** NodeJS, Express, FastApi, PostgreSQL, React, Next.js, Angular, Zustand, Socket.IO, Docker, Figma
+- **Compétences acquises:** Leadership technique et gestion d'équipe • Communication client et gestion de projet freelance
+
+### DEVELOPPEUR FULLSTACK, STAGE
+**CA2E & E-atiala** | Juillet 2022 - Février 2023 (8 mois)
+- Développement d'application web pour gestion de réservation de salles
+- Développement d'application web et mobile de planification de Réunion
+- Développement d'application Mobile pour la gestion des pointages et étudiants
+- **Stacks utilisées:** NodeJs, PostgreSQL, React, React-Native, Zustand, Socket.IO, Docker, Figma, Adobe XD, Adobe Photoshop
+
+### DEVELOPPEUR FULLSTACK, STAGE Puis CDD
+**Paositra Malagasy** | Février 2022 - Juin 2022 (5 mois)
+- Développement d'application web et mobile pour gestion des Congés
+- Développement d'application web de gestion de comptabilités et gestion de devis
+- **Stacks utilisées:** NodeJs, PostgreSQL, React, React-Native, Zustand, Socket.IO, Docker, Figma
+
+## Diplômes et Formations
+- **Master en informatique** - Ecole Nationale d'Informatique (ENI) - Génie Logiciel et base de données
+- **Diplôme Licence en informatique** - Ecole Nationale d'Informatique (ENI) - Génie Logiciel et base de données
+- **Bacc série C** - Lycée LRR
+
+## Prix et Distinctions
+- **2023 | 1 prix:** Deuxième place au hackathon organisé par PNUD (certificat)
 
 ## Langues
 - Français
