@@ -4,15 +4,13 @@ import { useState, useEffect } from 'react';
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import MobileNavigation from '@/components/MobileNavigation';
-import Accueil from '@/components/Accueil';
-import Projet from '@/components/Projet';
-import Techno from '@/components/Techno';
 import LoadingScreen from '@/components/LoadingScreen';
 import Chatbot from '@/components/Chatbot';
 import CookieConsent from '@/components/CookieConsent';
+import Legal from '@/components/Infolegal';
 
 // Composant principal
-export default function Home() {
+export default function PageLegal() {
   const [isLoading, setIsLoading] = useState(() => {
     // Vérifier si c'est la première visite
     if (typeof window !== 'undefined') {
@@ -39,26 +37,6 @@ export default function Home() {
     }
   }, [isLoading]);
 
-  // Gérer le hash dans l'URL au chargement de la page
-  useEffect(() => {
-    if (!isLoading && typeof window !== 'undefined') {
-      const hash = window.location.hash.substring(1);
-      if (hash) {
-        setTimeout(() => {
-          const section = document.getElementById(hash);
-          if (section) {
-            const headerHeight = 100;
-            const sectionPosition = section.offsetTop - headerHeight;
-            window.scrollTo({
-              top: sectionPosition,
-              behavior: 'smooth'
-            });
-          }
-        }, 800); // Délai pour laisser le temps au contenu de se charger
-      }
-    }
-  }, [isLoading]);
-
   const handleLoadingComplete = () => {
     setIsLoading(false);
   };
@@ -70,14 +48,8 @@ export default function Home() {
         <div className="min-h-screen animate-fadeIn">
           <Header />
           <main className=" md:pb-0">
-            <section id="accueil">
-              <Accueil />
-            </section>
-            <section id="projet">
-              <Projet />
-            </section>
-            <section id="techno">
-              <Techno />
+            <section id="legal">
+              <Legal />
             </section>
           </main>
           <Footer />

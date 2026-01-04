@@ -25,10 +25,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body
-        className="antialiased"
-        style={{ fontFamily: 'var(--font-inter)' }}
-      >
+      <body className="antialiased">
         <ClientLayout>
           {children}
         </ClientLayout>

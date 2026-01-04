@@ -222,6 +222,11 @@ function normalizeQuestion(question: string): string {
     return 'prix';
   }
   
+  // PRIORITÉ 7.7: Questions sur les informations légales (cookies, mentions légales, etc.)
+  if (normalized.match(/(information.*legal|informations.*legal|legal|legale|legales|mention.*legal|mentions.*legal|cookie|cookies|donnee.*personnel|données.*personnel|donnee.*personnelle|données.*personnelles|propriete.*intellectuel|propriété.*intellectuel|propriete.*intellectuelle|propriété.*intellectuelle|copyright|confidentialite|confidentialité|vie.*prive|vie.*privée|rgpd|gdpr|politique.*confidentialite|politique.*confidentialité|politique.*cookie|politique.*cookies)/i)) {
+    return 'legal';
+  }
+  
   // PRIORITÉ 8: Questions frontend/backend
   if (normalized.match(/(backend ou frontend|frontend ou backend|backend|frontend|prefer|prefere|specialise|specialized|meilleur|better)/i)) {
     return 'frontendBackend';
@@ -258,6 +263,7 @@ const synonyms: { [key: string]: string[] } = {
   'capable': ['capable', 'capacité', 'capacités', 'peut', 'peux', 'sait faire', 'est capable', 'capable de', 'can do', 'capabilities'],
   'doué': ['doué', 'doué en', 'bon en', 'expert', 'expertise', 'talent', 'talented'],
   'prix': ['prix', 'distinction', 'distinctions', 'récompense', 'recompense', 'récompenses', 'recompenses', 'hackathon', 'pnud', 'certificat', 'certificats', 'award', 'awards'],
+  'legal': ['legal', 'legale', 'legales', 'légale', 'légales', 'information legal', 'informations legal', 'information legale', 'informations legales', 'mention legal', 'mentions legal', 'mention legale', 'mentions legales', 'cookie', 'cookies', 'donnee personnel', 'données personnel', 'donnee personnelle', 'données personnelles', 'propriete intellectuel', 'propriété intellectuel', 'propriete intellectuelle', 'propriété intellectuelle', 'copyright', 'confidentialite', 'confidentialité', 'vie prive', 'vie privée', 'rgpd', 'gdpr', 'politique confidentialite', 'politique confidentialité', 'politique cookie', 'politique cookies'],
 };
 
 // Recherche améliorée par mots-clés pour le RAG avec synonymes et correspondance de phrases
@@ -351,6 +357,14 @@ function searchByKeywords(query: string, documents: string[], k: number = 8): st
       }
     });
     
+    // Bonus pour correspondance d'informations légales
+    const legalTerms = ['legal', 'legale', 'legales', 'légale', 'légales', 'cookie', 'cookies', 'mention legal', 'mentions legal', 'donnee personnel', 'données personnelles', 'propriete intellectuelle', 'propriété intellectuelle', 'copyright', 'confidentialite', 'confidentialité', 'rgpd', 'gdpr'];
+    legalTerms.forEach(term => {
+      if (originalQuery.includes(term) && originalDoc.includes(term)) {
+        score += 15; // Bonus très élevé pour correspondance d'information légale
+      }
+    });
+    
     return { doc, score, index };
   });
   
@@ -391,7 +405,8 @@ let chatModel: ChatOpenAI;
 
 // Fonction pour rechercher des documents pertinents avec RAG
 async function searchRelevantDocs(query: string, k: number = 5): Promise<string> {
-  const apiKey = process.env.OPENAI_API_KEY;
+  // Support pour OPEN_EPI_KEY (nom personnalisé) et OPENAI_API_KEY (nom standard)
+  const apiKey = process.env.OPEN_EPI_KEY || process.env.OPENAI_API_KEY;
   const knowledgeDocs = getKnowledgeDocuments();
   
   // Si pas de clé API, utiliser recherche par mots-clés améliorée
@@ -519,8 +534,9 @@ const multilingualResponses = {
       const cvLink = createCVLink(lang);
       return `Le CV de Sarobidy FIFALIANTSOA est disponible en format PDF. Vous pouvez le télécharger en cliquant sur le lien suivant : ${cvLink}\n\nLe CV contient toutes les informations détaillées sur son parcours professionnel, ses compétences, ses projets, ses expériences, ses diplômes et ses distinctions.`;
     },
-    outOfScope: "Désolé, je ne peux répondre qu'aux questions concernant le portfolio professionnel de Sarobidy FIFALIANTSOA.\n\nJe peux vous aider avec :\n• Ses compétences techniques et savoir-faire\n• Ses projets réalisés (web, mobile, IA)\n• Son expérience professionnelle détaillée\n• Les technologies qu'il maîtrise\n• Ses diplômes et formations\n• Ses prix et distinctions\n• Comment le contacter professionnellement\n• Son CV\n\nPour toute autre question, je vous invite à consulter directement le portfolio ou à le contacter via les informations de contact disponibles.",
+    outOfScope: "Désolé, je ne peux répondre qu'aux questions concernant le portfolio professionnel de Sarobidy FIFALIANTSOA.\n\nJe peux vous aider avec :\n• Ses compétences techniques et savoir-faire\n• Ses projets réalisés (web, mobile, IA)\n• Son expérience professionnelle détaillée\n• Les technologies qu'il maîtrise\n• Ses diplômes et formations\n• Ses prix et distinctions\n• Comment le contacter professionnellement\n• Son CV\n• Les informations légales du site (cookies, mentions légales, etc.)\n\nPour toute autre question, je vous invite à consulter directement le portfolio ou à le contacter via les informations de contact disponibles.",
     followup: "Souhaitez-vous en savoir plus sur un point spécifique ? Posez-moi une question plus précise !",
+    legal: "Voici les informations légales du site portfolio de Sarobidy FIFALIANTSOA :\n\n**Mentions Légales :**\nCe portfolio est la propriété de Sarobidy FIFALIANTSOA. Tous les projets présentés sont des réalisations personnelles ou professionnelles.\n\n**Propriété Intellectuelle :**\nL'ensemble du contenu de ce site (textes, images, logos, graphismes) est protégé par le droit d'auteur. Toute reproduction, même partielle, est interdite sans autorisation préalable.\n\n**Données Personnelles :**\nAucune donnée personnelle n'est collectée automatiquement sur ce site. Les informations de contact fournies volontairement sont utilisées uniquement pour répondre aux demandes.\n\n**Cookies :**\nCe site utilise des cookies pour améliorer votre expérience de navigation et compter les visiteurs. Les cookies utilisés sont des cookies de session et de comptage des visiteurs (stockage local). Aucun cookie de tracking tiers n'est utilisé. Vous pouvez accepter ou refuser les cookies via la bannière de consentement.\n\n**Copyright :**\n© 2026 Sarobidy FIFALIANTSOA. Tous droits réservés.\n\nPour plus d'informations, consultez la page \"Informations légales\" du portfolio ou contactez Sarobidy FIFALIANTSOA via email (sarobidy.fifaliantsoa@ilomad.com) ou téléphone (+261 34 46 536 09).",
   },
   en: {
     bonjour: "Hello! I am your AI assistant. I can answer your questions about Sarobidy FIFALIANTSOA's portfolio, his projects, his technical skills, his professional experience, his education and his distinctions. How can I help you?",
@@ -543,8 +559,9 @@ const multilingualResponses = {
       const cvLink = createCVLink(lang);
       return `Sarobidy FIFALIANTSOA's CV is available in PDF format. You can download it by clicking on the following link: ${cvLink}\n\nThe CV contains all detailed information about his professional background, skills, projects, experiences, education and distinctions.`;
     },
-    outOfScope: "Sorry, I can only answer questions about Sarobidy FIFALIANTSOA's professional portfolio.\n\nI can help you with:\n• His technical skills and capabilities\n• His completed projects (web, mobile, AI)\n• His detailed professional experience\n• The technologies he masters\n• His education and diplomas\n• His awards and distinctions\n• How to contact him professionally\n• His CV\n\nFor any other questions, I invite you to check the portfolio directly or contact him via the available contact information.",
+    outOfScope: "Sorry, I can only answer questions about Sarobidy FIFALIANTSOA's professional portfolio.\n\nI can help you with:\n• His technical skills and capabilities\n• His completed projects (web, mobile, AI)\n• His detailed professional experience\n• The technologies he masters\n• His education and diplomas\n• His awards and distinctions\n• How to contact him professionally\n• His CV\n• Legal information about the site (cookies, legal notices, etc.)\n\nFor any other questions, I invite you to check the portfolio directly or contact him via the available contact information.",
     followup: "Would you like to know more about a specific point? Ask me a more specific question!",
+    legal: "Here is the legal information about Sarobidy FIFALIANTSOA's portfolio site:\n\n**Legal Notices:**\nThis portfolio is the property of Sarobidy FIFALIANTSOA. All projects presented are personal or professional achievements.\n\n**Intellectual Property:**\nAll content on this site (texts, images, logos, graphics) is protected by copyright. Any reproduction, even partial, is prohibited without prior authorization.\n\n**Personal Data:**\nNo personal data is automatically collected on this site. Contact information provided voluntarily is used only to respond to requests.\n\n**Cookies:**\nThis site uses cookies to improve your browsing experience and count visitors. The cookies used are session cookies and visitor counting cookies (local storage). No third-party tracking cookies are used. You can accept or refuse cookies via the consent banner.\n\n**Copyright:**\n© 2026 Sarobidy FIFALIANTSOA. All rights reserved.\n\nFor more information, consult the \"Legal Information\" page of the portfolio or contact Sarobidy FIFALIANTSOA via email (sarobidy.fifaliantsoa@ilomad.com) or phone (+261 34 46 536 09).",
   },
   mga: {
     bonjour: "Miarahaba! Izaho dia ny mpanampy IA. Afaka mamaly ny fanontaniana momba ny portfolio an'i Sarobidy FIFALIANTSOA, ny tetikasany, ny fahaizany ara-teknika, ny traikefany ara-piasana, ny fianarany ary ny fankasitrahany aho. Ahoana no maha-afaka namampy anao aho?",
@@ -567,9 +584,10 @@ const multilingualResponses = {
       const cvLink = createCVLink(lang);
       return `Ny CV an'i Sarobidy FIFALIANTSOA dia azo ampidina amin'ny format PDF. Afaka ampidina izany amin'ny alalan'ny tsindrio ny rohy manaraka: ${cvLink}\n\nNy CV dia ahitana ny vaovao rehetra momba ny lalana niadidiny ara-piasana, ny fahaizany, ny tetikasany, ny traikefany, ny fianarany ary ny fankasitrahany.`;
     },
-    outOfScope: "Miala tsiny, afaka mamaly fotsiny ny fanontaniana momba ny portfolio ara-piasana an'i Sarobidy FIFALIANTSOA aho.\n\nAfaka manampy anao amin'ny:\n• Ny fahaizany ara-teknika sy ny fahaizany\n• Ny tetikasany vita (web, mobile, IA)\n• Ny traikefany ara-piasana amin'ny antsipiriany\n• Ny teknologia izay mahay\n• Ny fianarany sy ny diplômes\n• Ny loka sy ny fankasitrahany\n• Ny fomba mifandraisa aminy ara-piasana\n• Ny CV\n\nHo an'ny fanontaniana hafa, asaovy mijery ny portfolio mivantana na mifandraisa aminy amin'ny alalan'ny vaovao contact misy.",
-    followup: "Eny mazava! Ity ny vaovao hafa azoko omena momba an'i Sarobidy FIFALIANTSOA:\n\n• Ny fahaizany ara-teknika amin'ny antsipiriany\n• Ny tetikasany web, mobile sy IA\n• Ny lalana niadidiny ara-piasana feno\n• Ny teknologia izay mahay\n• Ny fianarany sy ny diplômes\n• Ny loka sy ny fankasitrahany\n• Ny fomba mifandraisa aminy\n• Ny fampidinana ny CV\n\nInona no tianao hahalala indrindra?",
+    outOfScope: "Miala tsiny, afaka mamaly fotsiny ny fanontaniana momba ny portfolio ara-piasana an'i Sarobidy FIFALIANTSOA aho.\n\nAfaka manampy anao amin'ny:\n• Ny fahaizany ara-teknika sy ny fahaizany\n• Ny tetikasany vita (web, mobile, IA)\n• Ny traikefany ara-piasana amin'ny antsipiriany\n• Ny teknologia izay mahay\n• Ny fianarany sy ny diplômes\n• Ny loka sy ny fankasitrahany\n• Ny fomba mifandraisa aminy ara-piasana\n• Ny CV\n• Ny vaovao ara-dalàna momba ny tranokala (cookies, mentions légales, sns)\n\nHo an'ny fanontaniana hafa, asaovy mijery ny portfolio mivantana na mifandraisa aminy amin'ny alalan'ny vaovao contact misy.",
+    followup: "Eny mazava! Ity ny vaovao hafa azoko omena momba an'i Sarobidy FIFALIANTSOA:\n\n• Ny fahaizany ara-teknika amin'ny antsipiriany\n• Ny tetikasany web, mobile sy IA\n• Ny lalana niadidiny ara-piasana feno\n• Ny teknologia izay mahay\n• Ny fianarany sy ny diplômes\n• Ny loka sy ny fankasitrahany\n• Ny fomba mifandraisa aminy\n• Ny fampidinana ny CV\n• Ny vaovao ara-dalàna momba ny tranokala\n\nInona no tianao hahalala indrindra?",
     chatbotCapabilities: "Eny, afaka miteny malagasy aho! Afaka mamaly ny fanontanianao amin'ny frantsay, anglisy na malagasy aho. Aza miady saina mametraka fanontaniana amin'ny fiteny tianao.\n\nAfaka manampy anao amin'ny vaovao rehetra momba ny portfolio an'i Sarobidy FIFALIANTSOA: ny fahaizany, ny tetikasany, ny traikefany, ny diplômes, ary bebe kokoa. Ahoana no maha-afaka namampy anao aho?",
+    legal: "Ity ny vaovao ara-dalàna momba ny tranokala portfolio an'i Sarobidy FIFALIANTSOA:\n\n**Mentions Légales :**\nIty portfolio ity dia an'i Sarobidy FIFALIANTSOA. Ny tetikasa rehetra aseho dia asa manokana na ara-piasana.\n\n**Propriété Intellectuelle :**\nNy votoaty rehetra amin'ity tranokala ity (soratra, sary, logo, sary) dia voaaro amin'ny lalàna momba ny zon'ny mpamorona. Ny famoahana indray, na ampahany, dia voarara raha tsy misy alalana aloha.\n\n**Données Personnelles :**\nTsy misy angona manokana voangona ho azy amin'ity tranokala ity. Ny vaovao contact omena an-tsitrapo dia ampiasaina fotsiny mba hamaly ny fangatahana.\n\n**Cookies :**\nIty tranokala ity dia mampiasa cookies mba hanatsara ny fahitanao ary handrefesana ny mpitsidika. Ny cookies ampiasaina dia cookies session sy cookies fandrefesana mpitsidika (local storage). Tsy misy cookies tracking fahatelo ampiasaina. Afaka manaiky na mandà ny cookies ianao amin'ny alalan'ny bannière consentement.\n\n**Copyright :**\n© 2026 Sarobidy FIFALIANTSOA. Ny zon'ny rehetra dia voaaro.\n\nHo hahalala bebe kokoa, jereo ny pejy \"Informations légales\" amin'ny portfolio na mifandraisa amin'i Sarobidy FIFALIANTSOA amin'ny alalan'ny email (sarobidy.fifaliantsoa@ilomad.com) na telefaona (+261 34 46 536 09).",
   },
 };
 
@@ -670,6 +688,13 @@ export async function POST(request: NextRequest) {
       });
     }
     
+    if (normalizedQ === 'legal') {
+      const legalResponse = multilingualResponses[responseLang].legal || multilingualResponses['fr'].legal;
+      return NextResponse.json({ 
+        response: legalResponse 
+      });
+    }
+    
     // Gérer les questions hors scope - Vérifier AVANT les autres questions
     if (normalizedQ === 'outOfScope') {
       const outOfScopeResponse = multilingualResponses[responseLang].outOfScope;
@@ -693,7 +718,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
+    // Support pour OPEN_EPI_KEY (nom personnalisé) et OPENAI_API_KEY (nom standard)
+    const apiKey = process.env.OPEN_EPI_KEY || process.env.OPENAI_API_KEY;
 
     // Si pas de clé API OpenAI, utiliser une réponse basique
     if (!apiKey) {
@@ -767,7 +793,7 @@ IMPORTANT - Règles à suivre:
 
 4. PORTÉE DES QUESTIONS:
    - Tu dois PRINCIPALEMENT répondre aux questions concernant le portfolio professionnel de Sarobidy FIFALIANTSOA
-   - Questions acceptées: compétences techniques, projets, expérience professionnelle, technologies maîtrisées, contact professionnel, CV, diplômes, formations, prix et distinctions, expériences détaillées, salutations, questions sur tes propres capacités, questions de suivi
+   - Questions acceptées: compétences techniques, projets, expérience professionnelle, technologies maîtrisées, contact professionnel, CV, diplômes, formations, prix et distinctions, expériences détaillées, salutations, questions sur tes propres capacités, questions de suivi, informations légales du site (cookies, mentions légales, propriété intellectuelle, données personnelles, copyright, confidentialité, RGPD)
    - Questions refusées UNIQUEMENT: vie personnelle (mariage, enfants, âge), salaire, hobbies personnels non liés au travail, questions complètement hors sujet (météo, actualité générale, etc.)
 
 2. UTILISATION DU CONTEXTE:
@@ -810,6 +836,7 @@ IMPORTANT - Règles à suivre:
    - Pour "montrer le CV" ou "télécharger le CV": Fournis le lien de téléchargement
    - Pour "quelles technologies maîtrise-t-il?": Liste TOUTES les technologies mentionnées dans le contexte, organisées par catégorie (Frontend, Backend, Design, etc.)
    - Pour "quelles sont ses coordonnées?" ou "comment le contacter?": Cite LinkedIn, GitHub, Website, Email, Téléphone
+   - Pour "informations légales?", "cookies?", "mentions légales?", "données personnelles?": Donne TOUTES les informations légales disponibles dans le contexte (cookies, mentions légales, propriété intellectuelle, données personnelles, copyright)
 
 6. EXEMPLES DE QUESTIONS À REFUSER:
    - "Est-il marié?" → "Désolé, je ne peux répondre qu'aux questions professionnelles."
