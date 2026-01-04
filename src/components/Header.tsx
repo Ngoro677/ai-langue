@@ -4,18 +4,51 @@ import { useState, useEffect, forwardRef } from 'react';
 import ProfileModal from './ProfileModal';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { motion } from 'framer-motion';
+import { usePathname, useRouter } from 'next/navigation';
 
 const Header = forwardRef<HTMLDivElement>((props, ref) => {
   const { t } = useI18n();
+  const pathname = usePathname();
+  const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeLink, setActiveLink] = useState('accueil');
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const isHomePage = pathname === '/';
 
+  // Gérer le backdrop-blur sur toutes les pages (détection du scroll)
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.scrollY;
       setIsScrolled(scrollTop > 50);
+    };
 
+    // Utiliser requestAnimationFrame pour optimiser les performances
+    let ticking = false;
+    const optimizedScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', optimizedScroll, { passive: true });
+    // Vérifier l'état initial
+    handleScroll();
+    return () => window.removeEventListener('scroll', optimizedScroll);
+  }, []);
+
+  // Gérer la détection des sections actives uniquement sur la page principale
+  useEffect(() => {
+    if (!isHomePage) {
+      return;
+    }
+
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      
       // Détection de la section active lors du scroll
       const accueilSection = document.getElementById('accueil');
       const projetSection = document.getElementById('projet');
@@ -59,10 +92,36 @@ const Header = forwardRef<HTMLDivElement>((props, ref) => {
     // Vérifier la section active au chargement initial
     handleScroll();
     return () => window.removeEventListener('scroll', optimizedScroll);
-  }, []);
+  }, [isHomePage]);
+
+  // Gérer le hash dans l'URL si on arrive depuis une autre page
+  useEffect(() => {
+    if (isHomePage && window.location.hash) {
+      const hash = window.location.hash.substring(1);
+      const section = document.getElementById(hash);
+      if (section) {
+        setTimeout(() => {
+          const headerHeight = 100;
+          const sectionPosition = section.offsetTop - headerHeight;
+          window.scrollTo({
+            top: sectionPosition,
+            behavior: 'smooth'
+          });
+          setActiveLink(hash);
+        }, 500);
+      }
+    }
+  }, [isHomePage]);
 
   const scrollToSection = (sectionId: string, delay: number = 0) => {
     setTimeout(() => {
+      // Si on n'est pas sur la page principale, naviguer vers la page principale avec le hash
+      if (!isHomePage) {
+        router.push(`/#${sectionId}`);
+        return;
+      }
+
+      // Si on est sur la page principale, faire le scroll normal
       const section = document.getElementById(sectionId);
       if (section) {
         const headerHeight = 100; // Hauteur approximative du header
@@ -99,11 +158,22 @@ const Header = forwardRef<HTMLDivElement>((props, ref) => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="flex items-center space-x-2"
           >
-             <img
-                src="/images/Logo.png"
-                alt="Logo"
-                className="w-32 h-full object-cover"
-              />
+             <button
+               onClick={() => {
+                 if (!isHomePage) {
+                   router.push('/');
+                 } else {
+                   scrollToSection('accueil');
+                 }
+               }}
+               className="cursor-pointer"
+             >
+               <img
+                 src="/images/Logo.png"
+                 alt="Logo"
+                 className="w-32 h-full object-cover"
+               />
+             </button>
 
             {/* Navigation */}
             <motion.nav 

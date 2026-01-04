@@ -3,13 +3,22 @@
 import { useState, useEffect } from 'react';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import ProfileModal from './ProfileModal';
+import { usePathname, useRouter } from 'next/navigation';
 
 export default function MobileNavigation() {
   const { t } = useI18n();
+  const pathname = usePathname();
+  const router = useRouter();
   const [activeLink, setActiveLink] = useState('accueil');
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const isHomePage = pathname === '/';
 
   useEffect(() => {
+    // Ne pas gérer le scroll si on n'est pas sur la page principale
+    if (!isHomePage) {
+      return;
+    }
+
     const handleScroll = () => {
       const accueilSection = document.getElementById('accueil');
       const projetSection = document.getElementById('projet');
@@ -50,9 +59,35 @@ export default function MobileNavigation() {
     window.addEventListener('scroll', optimizedScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener('scroll', optimizedScroll);
-  }, []);
+  }, [isHomePage]);
+
+  // Gérer le hash dans l'URL si on arrive depuis une autre page
+  useEffect(() => {
+    if (isHomePage && window.location.hash) {
+      const hash = window.location.hash.substring(1);
+      const section = document.getElementById(hash);
+      if (section) {
+        setTimeout(() => {
+          const headerHeight = 100;
+          const sectionPosition = section.offsetTop - headerHeight;
+          window.scrollTo({
+            top: sectionPosition,
+            behavior: 'smooth'
+          });
+          setActiveLink(hash);
+        }, 500);
+      }
+    }
+  }, [isHomePage]);
 
   const scrollToSection = (sectionId: string) => {
+    // Si on n'est pas sur la page principale, naviguer vers la page principale avec le hash
+    if (!isHomePage) {
+      router.push(`/#${sectionId}`);
+      return;
+    }
+
+    // Si on est sur la page principale, faire le scroll normal
     const section = document.getElementById(sectionId);
     if (section) {
       const headerHeight = 100;

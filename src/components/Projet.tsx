@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { translations } from '@/lib/i18n/translations';
 import ScrollReveal from './ScrollReveal';
 import StaggerReveal from './StaggerReveal';
 import NetworkBackground from './NetworkBackground';
@@ -16,7 +17,7 @@ interface Project {
 }
 
 export default function Projet() {
-    const { t } = useI18n();
+    const { t, language } = useI18n();
     const [hoveredSection, setHoveredSection] = useState<string | null>(null);
     const [hoverDirection, setHoverDirection] = useState<'left' | 'right' | null>(null);
     const [hoveredRow, setHoveredRow] = useState<string | null>(null);
@@ -29,45 +30,116 @@ export default function Projet() {
     const mobileScrollRef = useRef<HTMLDivElement>(null);
     const iaScrollRef = useRef<HTMLDivElement>(null);
 
+    // Mapping des titres aux clés de traduction
+    const getProjectTranslation = (key: string): { title: string; description: string } => {
+        try {
+            const langTranslations = translations[language];
+            const projetTranslations = (langTranslations as Record<string, unknown>)?.projet as Record<string, unknown>;
+            const projets = projetTranslations?.projets as Record<string, { title?: string; description?: string }> | undefined;
+            const project = projets?.[key];
+            if (project && typeof project === 'object' && 'title' in project && 'description' in project) {
+                return {
+                    title: project.title || '',
+                    description: project.description || ''
+                };
+            }
+        } catch {
+            // Fallback si la traduction n'existe pas
+        }
+        // Fallback vers le français
+        try {
+            const frTranslations = translations.fr;
+            const projetTranslations = (frTranslations as Record<string, unknown>)?.projet as Record<string, unknown>;
+            const projets = projetTranslations?.projets as Record<string, { title?: string; description?: string }> | undefined;
+            const project = projets?.[key];
+            if (project && typeof project === 'object' && 'title' in project && 'description' in project) {
+                return {
+                    title: project.title || '',
+                    description: project.description || ''
+                };
+            }
+        } catch {
+            // Ignore
+        }
+        return { title: '', description: '' };
+    };
+
     // Images pour les projets Web avec détails
-    const webProjects = [
-        { image: 'DasboardIlodesk.png', title: 'Dashboard Ilodesk', url: 'https://ilodesk.com', technologies: ['ReactJS', 'Dotnet', 'SQL Server', 'Typescript', 'Zustand','Git', 'Redis'], description: 'Dashboard administratif complet pour la gestion et le suivi des activités. Interface moderne avec visualisation de données en temps réel, gestion des utilisateurs et rapports détaillés.' },
-        { image: 'Ilodesk.png', title: 'Ilodesk Platform', url: 'https://ilodesk.com', technologies: ['ReactJS', 'Typescript', 'Tailwind' , 'Git'], description: 'Plateforme complète de gestion intégrée offrant une solution tout-en-un pour les entreprises. Interface intuitive avec design moderne et expérience utilisateur optimisée.' },
-        { image: 'SmartDasboard.png', title: 'Smart Dashboard', url: 'https://smartrhpro.com', technologies: ['ReactJS', 'TypeScript', 'Stripe', 'Chart.js', 'Zustand','NestJs' , 'Git', 'Redis'], description: 'Tableau de bord intelligent pour la gestion des ressources humaines. Système de paiement intégré avec Stripe, visualisation de données avancée et gestion complète du personnel.' },
-        { image: 'digitheque.png', title: 'Digitheque', url: 'https://digitheque.mg', technologies: ['Next.js', 'Prisma', 'Tailwind' , 'Git', 'Zustand'], description: 'Bibliothèque numérique moderne permettant l\'accès et la gestion de ressources documentaires. Interface responsive avec recherche avancée et système de catégorisation intelligent.' },
-        { image: 'folio.png', title: 'Portfolio', url: 'https://sarobidy-dev.vercel.app', technologies: ['ReactJS', 'Framer Motion', 'CSS3', 'Gsap'], description: 'Portfolio personnel moderne avec animations fluides et design contemporain. Présentation interactive des projets et compétences avec expérience utilisateur immersive.' },
-        { image: 'Ilomad-site.png', title: 'Ilomad Website', url: 'https://ilomad.com', technologies: ['Next', 'PHP', 'MySQL', 'Tailwind' , 'Git', 'Zustand'], description: 'Site web corporatif pour Ilomad avec présentation des services et solutions. Design professionnel avec intégration backend PHP et base de données MySQL.' },
-        { image: 'Sarakodev.png', title: 'Sarakodev', url: 'https://sarakodev.com', technologies: ['ExpressJs', 'Next', 'PosteGre', 'AWS' , 'Git', 'Zustand'], description: 'Plateforme de développement et collaboration pour développeurs. Infrastructure cloud sur AWS avec base de données PostgreSQL et API RESTful performante.' },
-        { image: 'Design.png', title: 'Ilofund', url: 'https://demo.ilofund.mg', technologies: ['Next', 'TypeScript', 'Tailwind', 'Git', 'Zustand','NextAuth', 'Node.js', 'PostgreSQL'], description: 'Plateforme de financement participatif avec Next, TypeScript, Tailwind et Zustand. Interface moderne avec gestion des projets et des investisseurs.' },
-    ];
+    const webProjects: Project[] = [
+        { image: 'DasboardIlodesk.png', titleKey: 'dashboardIlodesk', url: 'https://ilodesk.com', technologies: ['ReactJS', 'Dotnet', 'SQL Server', 'Typescript', 'Zustand','Git', 'Redis'] },
+        { image: 'Ilomad-site.png', titleKey: 'ilomadWebsite', url: 'https://ilomad.com', technologies: ['Next', 'PHP', 'MySQL', 'Tailwind' , 'Git', 'Zustand'] },
+        { image: 'SmartDasboard.png', titleKey: 'smartDashboard', url: 'https://smartrhpro.com', technologies: ['ReactJS', 'TypeScript', 'Stripe', 'Chart.js', 'Zustand','NestJs' , 'Git', 'Redis'] },
+        { image: 'Design.png', titleKey: 'ilofund', url: 'https://demo.ilofund.com', technologies: ['Next', 'TypeScript', 'Tailwind', 'Git', 'Zustand','NextAuth', 'Node.js', 'PostgreSQL'] },
+        { image: 'digitheque.png', titleKey: 'digitheque', url: 'https://digitheque.mg', technologies: ['Next.js', 'Prisma', 'Tailwind' , 'Git', 'Zustand'] },
+        { image: 'Ilodesk.png', titleKey: 'ilodeskPlatform', url: 'https://ilodesk.com', technologies: ['ReactJS', 'Typescript', 'Tailwind' , 'Git'] },
+        { image: 'folio.png', titleKey: 'portfolio', url: 'https://sarobidy-dev.vercel.app', technologies: ['ReactJS', 'Framer Motion', 'CSS3', 'Gsap'] },
+        { image: 'Sarakodev.png', titleKey: 'sarakodev', url: 'https://sarakodev.com', technologies: ['ExpressJs', 'Next', 'PosteGre', 'AWS' , 'Git', 'Zustand'] },
+    ].map(project => {
+        const translation = getProjectTranslation(project.titleKey);
+        return {
+            image: project.image,
+            url: project.url,
+            technologies: project.technologies,
+            title: translation.title,
+            description: translation.description
+        } as Project;
+    });
 
     //deuxieme image
 
-    const webProjects2 = [
-        { image: 'raitra.png', title: 'Raitra', url: 'https://raitra.com', technologies: ['ReactJS', 'Node.js', 'Postegre' , 'Git'], description: 'Plateforme web moderne pour la gestion et le suivi. Application full-stack avec React en frontend et Node.js en backend, base de données PostgreSQL pour une performance optimale.' },
-        { image: 'MaqueteProjet.png', title: 'Project Mockup', url: 'design', technologies: ['Adobe XD', 'Sketch', 'Photoshop'], description: 'Maquettes et prototypes de projets avec outils de design professionnels. Création d\'interfaces utilisateur avec workflow de design optimisé et collaboration facilitée.' },
-        { image: 'Ca2e.png', title: 'CA2E Platform', url: 'https://www.univ-fianarantsoa.mg', technologies: ['Laravel', 'React', 'MySQL', 'Redis'], description: 'Plateforme académique pour l\'université avec gestion des cours et étudiants. Système complet avec Laravel backend, interface React moderne et cache Redis pour performance.' },
-        { image: 'Congé.png', title: 'Congé Manager', url: 'https://smartrhpro.com', technologies: ['ReactJS', 'Express', 'PostgreSQL', 'JWT', 'Git', 'Zustand'], description: 'Système de gestion des congés et absences pour entreprises. Application sécurisée avec authentification JWT, gestion des demandes et approbations en temps réel.' },
-        { image: 'Gta.png', title: 'GTA Project', url: 'https://smartrhpro.com', technologies: ['Next', 'Next', 'Blender', 'Git', 'Zustand', 'Typescript'], description: 'Projet innovant combinant web et 3D avec intégration Blender. Application Next.js avec rendu 3D interactif et expérience utilisateur immersive.' },
-        { image: '178845027_10706545.png', title: 'Custom Project', url: 'design', technologies: ['ReactJS', 'TypeScript', 'Laravel', 'API', 'Docker'], description: 'Projet sur mesure avec architecture microservices. Stack moderne avec React/TypeScript, API Laravel, containerisation Docker pour déploiement scalable.' },
-        { image: 'MaqueteProjet.png', title: 'UI Design', url: 'design', technologies: ['Figma', 'Adobe XD', 'Sketch', 'Principle'], description: 'Design d\'interface utilisateur avec prototypage interactif. Création de design systems complets avec animations et transitions fluides pour une expérience utilisateur optimale.' }
-    ];
+    const webProjects2: Project[] = [
+        { image: '178845027_10706545.png', titleKey: 'cagnoteProjet', url: 'https://demo.ilofund.com', technologies: ['Next', 'TypeScript', 'NodeJs', 'API', 'Docker', 'LLMs', 'Python', 'FastApi'] },
+        { image: 'MaqueteProjet.png', titleKey: 'gestionDepartement', url: 'https://smartrhpro.com', technologies: ['NodeJs', 'ReactJS', 'Blender', 'Git', 'Zustand', 'Typescript'] },
+        { image: 'Ca2e.png', titleKey: 'ca2ePlatform', url: 'https://www.univ-fianarantsoa.mg/Centre/details/11', technologies: ['Laravel', 'React', 'MySQL', 'Redis'] },
+        { image: 'Gta.png', titleKey: 'gestionTempsTravail', url: 'https://smartrhpro.com', technologies: ['NodeJs', 'ReactJS', 'Blender', 'Git', 'Zustand', 'Typescript'] },
+        { image: 'Congé.png', titleKey: 'congeManager', url: 'https://smartrhpro.com', technologies: ['ReactJS', 'Express', 'PostgreSQL', 'JWT', 'Git', 'Zustand'] },
+        { image: 'raitra.png', titleKey: 'raitra', url: 'https://raitra.com', technologies: ['ReactJS', 'Node.js', 'Postegre' , 'Git'] },
+   ].map(project => {
+        const translation = getProjectTranslation(project.titleKey);
+        return {
+            image: project.image,
+            url: project.url,
+            technologies: project.technologies,
+            title: translation.title,
+            description: translation.description
+        } as Project;
+    });
 
     // Images pour les projets Mobile
-    const mobileProjects = [
-        { image: 'Mobilité Pnud.png', title: 'Mobilité PNUD', url: 'Application Mobile', technologies: ['React Native', 'Firebase', 'Maps API', 'Redux', 'Typescript'], description: 'Application mobile pour la gestion de la mobilité PNUD. Intégration de cartes interactives, synchronisation Firebase et gestion d\'état avec Redux.' },
-        { image: 'Ca2eMobile.png', title: 'CA2E Mobile', url: 'Application Mobile', technologies: ['React Native', 'ExpressJs', 'SQLite', 'REST API'], description: 'Application mobile académique avec accès aux cours et ressources. Base de données locale SQLite, synchronisation avec API REST et interface native optimisée.' },
-        { image: 'design.png', title: 'Mobile Design', url: 'design', technologies: ['Figma', 'Adobe illustrator', 'Principle'], description: 'Design d\'applications mobiles avec prototypage interactif. Création d\'interfaces natives avec animations et transitions pour iOS et Android.' },
-        { image: '178845027_10706545.png', title: 'Mobile App', url: 'Application Mobile', technologies: ['React Native', 'TypeScript', 'GraphQL'], description: 'Application mobile moderne avec GraphQL pour requêtes optimisées. Architecture TypeScript pour type-safety et performance maximale.' },
-        { image: '178845027_10706545HKHHK.png', title: 'Custom Mobile', url: 'Application Mobile', technologies: ['React Native', 'Firebase', 'Bloc', 'Material'], description: 'Application mobile personnalisée avec architecture Bloc. Design Material Design, authentification Firebase et gestion d\'état réactive.' },
-        { image: 'Deis.png', title: 'DEIS Mobile', url: 'Application Mobile', technologies: ['Ionic', 'Angular', 'SQLite'], description: 'Application mobile cross-platform avec Ionic et Angular. Base de données SQLite locale, interface hybride performante pour iOS et Android.' },
-        { image: 'portofolio.png', title: 'Portfolio Mobile', url: 'Application Mobile', technologies: ['React Native', 'Navigation', 'AsyncStorage', 'Netlify'], description: 'Application mobile portfolio avec navigation fluide. Stockage local AsyncStorage, déploiement Netlify et présentation interactive des projets.' }
-    ];
+    const mobileProjects: Project[] = [
+        { image: 'Mobilité Pnud.png', titleKey: 'mobiliteUrbaine', url: 'Application Mobile', technologies: ['React Native', 'Firebase', 'Maps API', 'Redux', 'Typescript'] },
+        { image: 'Ca2eMobile.png', titleKey: 'pointageCa2eMobile', url: 'Application Mobile', technologies: ['React Native', 'ExpressJs', 'NodeJs', 'REST API', 'PostgreSql'] },
+        { image: 'design.png', titleKey: 'mobileDesign', url: 'design', technologies: ['Figma', 'Adobe illustrator', 'Principle'] },
+        { image: '178845027_10706545.png', titleKey: 'mobileApp', url: 'Application Mobile', technologies: ['React Native', 'TypeScript', 'GraphQL'] },
+        { image: '178845027_10706545HKHHK.png', titleKey: 'customMobile', url: 'Application Mobile', technologies: ['React Native', 'Firebase', 'Bloc', 'Material'] },
+        { image: 'Deis.png', titleKey: 'deisMobile', url: 'Application Mobile', technologies: ['React-Native', 'TypeScript', 'Firebasa'] },
+        { image: 'portofolio.png', titleKey: 'portfolioMobile', url: 'Application Mobile', technologies: ['React Native', 'Navigation', 'AsyncStorage', 'Netlify'] }
+    ].map(project => {
+        const translation = getProjectTranslation(project.titleKey);
+        return {
+            image: project.image,
+            url: project.url,
+            technologies: project.technologies,
+            title: translation.title,
+            description: translation.description
+        } as Project;
+    });
 
     // Images pour les projets IA
-    const iaProjects = [
-        { image: 'IA.png', title: 'AI Project', url: 'application IA', technologies: ['Python', 'TensorFlow', 'OpenCV', 'Docker', 'FastApi', 'React'], description: 'Application d\'intelligence artificielle avec traitement d\'images et machine learning. Backend Python avec TensorFlow, API FastAPI, interface React moderne et containerisation Docker.' }
-    ];
+    const iaProjects: Project[] = [
+        { image: 'IA.png', titleKey: 'analyseCriminelle', url: 'application IA', technologies: ['Python', 'TensorFlow', 'OpenCV', 'Docker', 'FastApi', 'React'] },
+        { image: 'AnalyseOCR.png', titleKey: 'analyseOCR', url: 'https://smartrhpro.com', technologies: ['Python', 'Nest', 'OpenCV', 'Docker', 'FastApi', 'React', 'NodeJs'] },
+        { image: 'AnalyseKYC.png', titleKey: 'analyseKYC', url: 'https://demo.ilofund.com', technologies: ['Python', 'TensorFlow', 'NodeJs', 'Docker', 'FastApi', 'Next', 'LLMS'] }
+    ].map(project => {
+        const translation = getProjectTranslation(project.titleKey);
+        return {
+            image: project.image,
+            url: project.url,
+            technologies: project.technologies,
+            title: translation.title,
+            description: translation.description
+        } as Project;
+    });
 
     const scrollProjects = (direction: 'left' | 'right', section: string) => {
         let scrollRef;

@@ -272,6 +272,31 @@ Il est capable de:
 - WhatsApp: Disponible via le numéro de téléphone
 - LinkedIn: Disponible via le profil LinkedIn
 - CV: Disponible en téléchargement au format PDF dans le portfolio
+
+## Informations Légales du Site
+
+### Mentions Légales
+Ce portfolio est la propriété de Sarobidy FIFALIANTSOA. Tous les projets présentés sont des réalisations personnelles ou professionnelles. Les technologies et outils mentionnés sont utilisés à des fins de démonstration de compétences.
+
+### Propriété Intellectuelle
+L'ensemble du contenu de ce site (textes, images, logos, graphismes) est protégé par le droit d'auteur. Toute reproduction, même partielle, est interdite sans autorisation préalable.
+
+### Données Personnelles et Confidentialité
+Aucune donnée personnelle n'est collectée automatiquement sur ce site. Les informations de contact fournies volontairement via les formulaires ou liens sont utilisées uniquement pour répondre aux demandes. Le site respecte la vie privée des visiteurs et ne partage aucune information personnelle avec des tiers.
+
+### Cookies
+Ce site utilise des cookies pour améliorer votre expérience de navigation et compter les visiteurs. Les cookies utilisés sont :
+- Cookies de session pour améliorer l'expérience utilisateur
+- Cookies de comptage des visiteurs (stockage local)
+- Aucun cookie de tracking tiers n'est utilisé
+
+Vous pouvez accepter ou refuser les cookies via la bannière de consentement affichée lors de votre première visite. Le consentement est stocké localement dans votre navigateur.
+
+### Contact Légal
+Pour toute question ou demande concernant les informations légales, vous pouvez contacter Sarobidy FIFALIANTSOA via les moyens indiqués dans la section contact du portfolio (email: sarobidy.fifaliantsoa@ilomad.com, téléphone: +261 34 46 536 09).
+
+### Copyright
+© 2026 Sarobidy FIFALIANTSOA. Tous droits réservés. Ce portfolio est protégé par les lois sur la propriété intellectuelle.
 `;
 
 export function getKnowledgeDocuments(): string[] {

@@ -1,12 +1,19 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import NetworkBackground from './NetworkBackground';
 import ScrollReveal from './ScrollReveal';
 import StaggerReveal from './StaggerReveal';
+import { useRouter } from 'next/navigation';
 
 export default function Footer() {
   const { t } = useI18n();
+  const redi = useRouter();
+
+  function redire(){
+    redi.push('/Info-legal')
+  }
 
   return (
     <footer className="bg-gray-900 text-white py-12 relative overflow-hidden">
@@ -74,6 +81,10 @@ export default function Footer() {
             {/* Copyright */}
             <div className="text-gray-300 text-sm">
               {t('footer.copyright')}
+            </div>
+
+            <div onClick={redire} className="text-gray-300 text-sm cursor-pointer hover:text-yellow-400 transition-colors">
+                {t('legal.titre')}
             </div>
 
             {/* Language Flags */}
