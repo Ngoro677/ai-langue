@@ -12,6 +12,7 @@
     "@gsap/react": "^2.1.2",
     "@langchain/community": "^1.0.0",
     "@langchain/core": "^1.0.2",
+    "@langchain/groq": "^1.0.4",
     "@langchain/openai": "^1.0.0",
     "@prismicio/client": "^7.0.0",
     "@prismicio/helpers": "^2.0.0",

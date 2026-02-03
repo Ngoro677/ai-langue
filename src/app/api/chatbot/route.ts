@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ChatOpenAI } from '@langchain/openai';
+import { ChatGroq } from '@langchain/groq';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import { getKnowledgeDocuments } from '@/lib/knowledgeBase';
@@ -197,9 +198,9 @@ function searchByKeywords(query: string, documents: string[], k: number = 8): st
 // Cache pour les embeddings et documents
 let documentsCache: Array<{ content: string; embedding?: number[] }> = [];
 
-// Fonction pour rechercher des documents pertinents avec RAG
+// Fonction pour rechercher des documents pertinents avec RAG (embeddings OpenAI uniquement ; sans clé = recherche par mots-clés)
 async function searchRelevantDocs(query: string, k: number = 8): Promise<string> {
-  const apiKey = process.env.OPENAI_API_KEY || process.env.OPEN_EPI_KEY;
+  const apiKey = process.env.OPENAI_API_KEY;
   const knowledgeDocs = getKnowledgeDocuments();
   
   if (!apiKey) {
@@ -302,23 +303,29 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Vérifier la présence de la clé API OpenAI
-    const apiKey = process.env.OPENAI_API_KEY || process.env.OPEN_EPI_KEY;
+    // Utiliser GROQ en priorité, sinon OpenAI
+    const groqApiKey = process.env.GROQ_API_KEY;
+    const openaiApiKey = process.env.OPENAI_API_KEY;
 
-    if (!apiKey) {
+    if (!groqApiKey && !openaiApiKey) {
       return NextResponse.json(
-        { error: 'Clé API OpenAI non configurée. Veuillez ajouter OPENAI_API_KEY dans votre fichier .env.local' },
+        { error: 'Clé API non configurée. Ajoutez GROQ_API_KEY ou OPENAI_API_KEY dans votre fichier .env (ou .env.local)' },
         { status: 500 }
       );
     }
 
     try {
-      // Initialiser le modèle de chat OpenAI
-      const chatModel = new ChatOpenAI({
-        openAIApiKey: apiKey,
-        modelName: 'gpt-4o-mini',
-        temperature: 0.7, // Température légèrement augmentée pour des réponses plus naturelles
-      });
+      const chatModel = groqApiKey
+        ? new ChatGroq({
+            apiKey: groqApiKey,
+            model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
+            temperature: 0.7,
+          })
+        : new ChatOpenAI({
+            openAIApiKey: openaiApiKey,
+            modelName: 'gpt-4o-mini',
+            temperature: 0.7,
+          });
 
       // Rechercher des documents pertinents avec RAG
       const relevantDocs = await searchRelevantDocs(message, 10);
@@ -410,7 +417,7 @@ CONTEXTE DU PORTFOLIO (informations pertinentes):
 
       return NextResponse.json({ response: cleanedResponse });
     } catch (error) {
-      console.error('Erreur avec OpenAI:', error);
+      console.error('Erreur avec le modèle de chat (Groq/OpenAI):', error);
       
       const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
       
