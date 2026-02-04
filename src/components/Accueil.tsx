@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Chatbot from './Chatbot';
 import LanguageSwitcher from './LanguageSwitcher';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -14,6 +16,7 @@ function dispatchChatbotQuestion(question: string) {
 
 export default function Accueil() {
   const { t } = useI18n();
+  const [suggestionsVisible, setSuggestionsVisible] = useState(true);
 
   const suggestions = [
     t('accueil.suggestion1'),
@@ -55,7 +58,25 @@ export default function Accueil() {
             {/* Description */}
             <ScrollReveal direction="up" delay={0.8} duration={0.8}>
               <p className="text-lg ilo text-gray-300 leading-relaxed max-w-lg">
-                {t('accueil.description', { js: t('accueil.js'), designeur: t('accueil.designeur') })}
+                {(() => {
+                  const fullstack = t('accueil.fullstack');
+                  const designeur = t('accueil.designeur');
+                  const ia = t('accueil.ia');
+                  const sep = '\u0000';
+                  const raw = t('accueil.description', {
+                    fullstack: sep + 'f' + sep,
+                    designeur: sep + 'd' + sep,
+                    ia: sep + 'i' + sep,
+                  });
+                  const parts = raw.split(sep).filter(Boolean);
+                  const style = 'font-bold text-yellow-600';
+                  return parts.map((part, i) => {
+                    if (part === 'f') return <span key={i} className={style}>{fullstack}</span>;
+                    if (part === 'd') return <span key={i} className={style}>{designeur}</span>;
+                    if (part === 'i') return <span key={i} className={style}>{ia}</span>;
+                    return <span key={i}>{part}</span>;
+                  });
+                })()}
               </p>
             </ScrollReveal>
 
@@ -104,12 +125,31 @@ export default function Accueil() {
 
         </div>
 
-        {/* Questions fréquentes – position fixe, design pro */}
-        <div
-          className="fixed right-4 sm:right-8 lg:right-12 top-[70vh] -translate-y-1/2 z-[9998] flex flex-col gap-3 pointer-events-none sm:pointer-events-auto"
+        {/* Questions fréquentes – position fixe ; masquables via l’icône fermer */}
+        <AnimatePresence>
+          {suggestionsVisible && (
+            <motion.div
+              key="suggestions-block"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.25 }}
+          className="fixed right-4 sm:right-8 lg:right-12 md:top-[67vh] top-[57vh] -translate-y-1/2 z-[9998] flex flex-col gap-3 pointer-events-none sm:pointer-events-auto"
           aria-label="Questions fréquentes pour l’assistant"
         >
-          {suggestions.map((label, i) => (
+              <div className="pointer-events-auto flex justify-end -mb-1">
+                <button
+                  type="button"
+                  onClick={() => setSuggestionsVisible(false)}
+                  className="p-1.5 rounded-lg bg-gray-800/90 hover:bg-gray-700 border border-gray-600/80 hover:border-yellow-400/70 text-gray-400 hover:text-yellow-400 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400/50 focus:ring-offset-2 focus:ring-offset-gray-900"
+                  aria-label="Fermer les suggestions"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              {suggestions.map((label, i) => (
             <button
               key={i}
               type="button"
@@ -120,9 +160,12 @@ export default function Accueil() {
               {label}
             </button>
           ))}
-        </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Chatbot */}
+        
         <Chatbot />
 
         {/* Language switcher */}
