@@ -10,6 +10,9 @@ export const translations = {
       designeur: "Designeur",
       projetRealises: "Projet réalisés",
       contact: "Contact",
+      suggestion1: "Quelles sont ses compétences techniques ?",
+      suggestion2: "Quels projets a-t-il réalisés ?",
+      suggestion3: "Comment le contacter ?",
     },
     // Navigation
     nav: {
@@ -209,6 +212,9 @@ export const translations = {
       designeur: "Designer",
       projetRealises: "Completed Projects",
       contact: "Contact",
+      suggestion1: "What are his technical skills?",
+      suggestion2: "What projects has he completed?",
+      suggestion3: "How to contact him?",
     },
     // Navigation
     nav: {
@@ -408,6 +414,9 @@ export const translations = {
       designeur: "Designera",
       projetRealises: "Tetikasa vita",
       contact: "Hifandray amiko",
+      suggestion1: "Inona ny fahaizany ara-teknika?",
+      suggestion2: "Inona ny tetikasa nataony?",
+      suggestion3: "Ahoana no mifandraisa aminy?",
     },
     // Navigation
     nav: {

@@ -6,8 +6,20 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import ScrollReveal from './ScrollReveal';
 import StaggerReveal from './StaggerReveal';
 
+const CHATBOT_SEND_QUESTION = 'chatbot-send-question';
+
+function dispatchChatbotQuestion(question: string) {
+  window.dispatchEvent(new CustomEvent(CHATBOT_SEND_QUESTION, { detail: { question } }));
+}
+
 export default function Accueil() {
   const { t } = useI18n();
+
+  const suggestions = [
+    t('accueil.suggestion1'),
+    t('accueil.suggestion2'),
+    t('accueil.suggestion3'),
+  ] as const;
 
   return (
     <section
@@ -92,8 +104,26 @@ export default function Accueil() {
 
         </div>
 
-         {/* Chatbot */}
-         <Chatbot />
+        {/* Questions fréquentes – position fixe, design pro */}
+        <div
+          className="fixed right-4 sm:right-8 lg:right-12 top-[70vh] -translate-y-1/2 z-[9998] flex flex-col gap-3 pointer-events-none sm:pointer-events-auto"
+          aria-label="Questions fréquentes pour l’assistant"
+        >
+          {suggestions.map((label, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => dispatchChatbotQuestion(label)}
+              className="pointer-events-auto ilo w-full max-w-[220px] sm:max-w-[260px] text-left px-4 py-2 rounded-xl bg-gray-900/90 backdrop-blur-sm border border-gray-600/80 hover:border-yellow-400/90 text-white text-sm font-medium shadow-lg hover:shadow-yellow-400/10 hover:bg-gray-800/95 transition-all duration-300 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-yellow-400/50 focus:ring-offset-2 focus:ring-offset-transparent"
+            >
+              <span className="text-yellow-400/90 mr-2">?</span>
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Chatbot */}
+        <Chatbot />
 
         {/* Language switcher */}
         <LanguageSwitcher />

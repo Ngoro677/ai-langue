@@ -51,12 +51,13 @@ export default function Chatbot() {
     }
   }, [isOpen]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  const sendMessage = async (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || isLoading) return;
 
     const userMessage: Message = {
       role: 'user',
-      content: input.trim(),
+      content: trimmed,
       timestamp: new Date(),
     };
 
@@ -70,9 +71,9 @@ export default function Chatbot() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          message: userMessage.content,
-          language: language // Envoyer la langue actuelle
+        body: JSON.stringify({
+          message: trimmed,
+          language: language,
         }),
       });
 
@@ -86,7 +87,7 @@ export default function Chatbot() {
         role: 'assistant',
         content: data.response,
         timestamp: new Date(),
-        userQuestion: userMessage.content, // Stocker la question pour la mise en évidence
+        userQuestion: trimmed,
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
@@ -96,13 +97,31 @@ export default function Chatbot() {
         role: 'assistant',
         content: t('chatbot.erreur'),
         timestamp: new Date(),
-        userQuestion: userMessage.content,
+        userQuestion: trimmed,
       };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
   };
+
+  const handleSend = () => sendMessage(input);
+
+  const sendMessageRef = useRef(sendMessage);
+  sendMessageRef.current = sendMessage;
+
+  // Écouter les questions envoyées depuis les suggestions (ex: page Accueil)
+  useEffect(() => {
+    const handler = (e: CustomEvent<{ question: string }>) => {
+      const question = e.detail?.question;
+      if (question && typeof question === 'string') {
+        setIsOpen(true);
+        sendMessageRef.current(question);
+      }
+    };
+    window.addEventListener('chatbot-send-question', handler as EventListener);
+    return () => window.removeEventListener('chatbot-send-question', handler as EventListener);
+  }, []);
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
