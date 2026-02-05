@@ -149,7 +149,7 @@ const Header = forwardRef<HTMLDivElement>((props, ref) => {
       }`}
     >
       <div ref={ref} className="bounds absolute inset-0 pointer-events-none"></div>
-      <div className="max-w-[90vw] mx-auto py-4">
+      <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <motion.div 
@@ -231,7 +231,7 @@ const Header = forwardRef<HTMLDivElement>((props, ref) => {
             initial={{ x: 50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex items-center space-x-4"
+            className="flex mr-4 md:mr-0 items-center space-x-4"
           >
             {/* Social Icons */}
             <div className="flex items-center space-x-3">
