@@ -16,22 +16,6 @@ function normalizeText(text: string): string {
     .replace(/[^\w\s]/g, ' '); // Remplacer les caractères spéciaux par des espaces
 }
 
-// Créer des liens HTML cliquables vers les sections du portfolio
-function createSectionLink(text: string, sectionId: string): string {
-  return `<a href="#${sectionId}" data-section-id="${sectionId}" class="section-link text-yellow-400 hover:text-yellow-300 underline font-semibold cursor-pointer transition-colors">${text}</a>`;
-}
-
-// Créer un lien de téléchargement pour le CV
-function createCVLink(language: 'fr' | 'en' | 'mga' = 'fr'): string {
-  const linkTexts = {
-    fr: 'Télécharger le CV',
-    en: 'Download CV',
-    mga: 'Ampidino ny CV',
-  };
-  
-  return `<a href="/cv.pdf" download="CV_Sarobidy_Fifaliantsoa.pdf" class="cv-link text-yellow-400 hover:text-yellow-300 underline font-semibold cursor-pointer transition-colors">${linkTexts[language]}</a>`;
-}
-
 // Nettoyer les réponses pour supprimer les markdown et formater proprement
 function cleanResponse(response: string): string {
   return response
