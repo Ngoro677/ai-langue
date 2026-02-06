@@ -1,5 +1,5 @@
-import LanguageChat from '@/components/LanguageChat';
+import DashboardLayout from '@/components/DashboardLayout';
 
 export default function Home() {
-  return <LanguageChat />;
+  return <DashboardLayout />;
 }

@@ -1,0 +1,258 @@
+'use client';
+
+import { useState } from 'react';
+import { useSession, signOut } from 'next-auth/react';
+import Link from 'next/link';
+import {
+  FileText,
+  Calendar,
+  MessageSquare,
+  Settings,
+  Users,
+  HelpCircle,
+  LogIn,
+  UserPlus,
+  LogOut,
+  Star,
+  Image as ImageIcon,
+  FileStack,
+  Info,
+  ChevronDown,
+  X,
+  User,
+} from 'lucide-react';
+import LanguageChat from '@/components/LanguageChat';
+
+const leftNavItems = [
+  { icon: FileText, label: 'Documents', href: '#' },
+  { icon: Calendar, label: 'Calendrier', href: '#' },
+  { icon: MessageSquare, label: 'Chat', href: '#', active: true },
+  { icon: Settings, label: 'Paramètres', href: '#' },
+  { icon: Users, label: 'Utilisateurs', href: '#' },
+  { icon: HelpCircle, label: 'Aide', href: '#' },
+];
+
+function ProfilePanelContent({
+  session,
+  status,
+  onClose,
+}: {
+  session: ReturnType<typeof useSession>['data'];
+  status: string;
+  onClose?: () => void;
+}) {
+  return (
+    <>
+      <div className="border-b border-slate-200 p-4">
+        {status === 'loading' ? (
+          <div className="h-20 animate-pulse rounded-lg bg-slate-200" />
+        ) : session?.user ? (
+          <>
+            <div className="flex items-center gap-3">
+              <div className="relative h-14 w-14 shrink-0">
+                {session.user.image ? (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={session.user.image}
+                      alt=""
+                      className="h-14 w-14 rounded-full bg-slate-300 object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                        const parent = (e.target as HTMLImageElement).parentElement;
+                        const fallback = parent?.querySelector('[data-avatar-fallback]');
+                        if (fallback) (fallback as HTMLElement).style.display = 'flex';
+                      }}
+                    />
+                    <div data-avatar-fallback className="absolute inset-0 hidden h-14 w-14 items-center justify-center rounded-full bg-amber-500/20 text-xl font-semibold text-amber-700" aria-hidden>
+                      {(session.user.name ?? session.user.email ?? '?').charAt(0).toUpperCase()}
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-500/20 text-xl font-semibold text-amber-700">
+                    {(session.user.name ?? session.user.email ?? '?').charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-semibold text-slate-900">
+                  {session.user.name ?? session.user.email ?? 'Utilisateur'}
+                </p>
+                <p className="text-sm text-slate-500">Membre</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => { signOut(); onClose?.(); }}
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              <LogOut className="h-4 w-4" />
+              Déconnexion
+            </button>
+          </>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-sm text-slate-600">Connectez-vous pour enregistrer vos conversations.</p>
+            <Link
+              href="/login"
+              onClick={onClose}
+              className="flex bouton-ilo w-full items-center justify-center gap-2 rounded-lg bg-yellow-600 py-2.5 text-sm font-medium text-white hover:bg-amber-400"
+            >
+              <LogIn className="h-4 w-4 text-white" />
+              Se connecter
+            </Link>
+            <Link
+              href="/register"
+              onClick={onClose}
+              className="flex bouton-ilo w-full items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              <UserPlus className="h-4 w-4" />
+              S&apos;inscrire
+            </Link>
+          </div>
+        )}
+      </div>
+      {session?.user && (
+        <div className="flex-1 overflow-y-auto p-2">
+          <button type="button" className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm hover:bg-slate-100">
+            <span className="flex items-center gap-2 text-slate-700">
+              <Star className="h-4 w-4 text-amber-500" />
+              Messages étoilés
+            </span>
+            <ChevronDown className="h-4 w-4 text-slate-400" />
+          </button>
+          <button type="button" className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm hover:bg-slate-100">
+            <span className="flex items-center gap-2 text-slate-700">
+              <ImageIcon className="h-4 w-4" />
+              Médias
+            </span>
+            <ChevronDown className="h-4 w-4 text-slate-400" />
+          </button>
+          <button type="button" className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm hover:bg-slate-100">
+            <span className="flex items-center gap-2 text-slate-700">
+              <FileStack className="h-4 w-4" />
+              Fichiers et documents
+            </span>
+            <ChevronDown className="h-4 w-4 text-slate-400" />
+          </button>
+          <button type="button" className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm hover:bg-slate-100">
+            <span className="flex items-center gap-2 text-slate-700">
+              <Info className="h-4 w-4" />
+              Informations
+            </span>
+            <ChevronDown className="h-4 w-4 text-slate-400" />
+          </button>
+        </div>
+      )}
+    </>
+  );
+}
+
+export default function DashboardLayout() {
+  const { data: session, status } = useSession();
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  const mobileProfileTrigger = (
+    <div className="flex items-center md:hidden">
+      <button
+        type="button"
+        onClick={() => setProfileOpen((o) => !o)}
+        className="flex items-center gap-1.5 rounded-lg px-1.5 py-1.5 hover:bg-slate-100"
+        aria-label={profileOpen ? 'Fermer le profil' : 'Ouvrir le profil'}
+        aria-expanded={profileOpen}
+      >
+        {status === 'loading' ? (
+          <div className="h-8 w-8 animate-pulse rounded-full bg-slate-200" />
+        ) : session?.user ? (
+          <>
+            <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-amber-500/20 text-sm font-semibold text-amber-700">
+              {session.user.image ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={session.user.image} alt="" className="h-full w-full object-cover" />
+              ) : (
+                (session.user.name ?? session.user.email ?? '?').charAt(0).toUpperCase()
+              )}
+            </div>
+            <ChevronDown className={`h-4 w-4 text-slate-500 transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
+          </>
+        ) : (
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-slate-600">
+            <User className="h-4 w-4" />
+          </span>
+        )}
+      </button>
+    </div>
+  );
+
+  return (
+    <div className="flex h-dvh max-h-screen w-full min-h-0 bg-[#1e3a5f] text-slate-100">
+      {/* Barre latérale gauche - icônes */}
+      <aside className="flex w-16 shrink-0 flex-col items-center border-r border-slate-700/50 bg-slate-900/90 pt-safe">
+        <div className="flex h-14 w-full items-center justify-center border-b border-slate-700/50">
+          <div className="flex h-9 ilo w-9 items-center justify-center rounded-full bg-amber-500/20 text-amber-400">
+            <span className="text-sm font-bold">IA</span>
+          </div>
+        </div>
+        <nav className="flex flex-1 flex-col items-center gap-1 py-3">
+          {leftNavItems.map(({ icon: Icon, label, active }) => (
+            <Link
+              key={label}
+              href={Icon === MessageSquare ? '/' : '#'}
+              className={`relative flex h-11 w-11 items-center justify-center rounded-lg transition-colors ${
+                active ? 'bg-slate-800 text-amber-400' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+              }`}
+              title={label}
+              aria-label={label}
+            >
+              <Icon className="h-5 w-5" />
+              {active && (
+                <span className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-yellow-600" />
+              )}
+            </Link>
+          ))}
+        </nav>
+      </aside>
+
+      {/* Zone centrale - Chat IA */}
+      <section className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-l-2xl bg-slate-100 text-slate-900 shadow-xl">
+        <LanguageChat headerRight={mobileProfileTrigger} />
+      </section>
+
+      {/* Overlay profil mobile (toggle) */}
+      {profileOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-slate-900/50 backdrop-blur-sm md:hidden"
+            onClick={() => setProfileOpen(false)}
+            aria-hidden
+          />
+          <aside
+            className="fixed inset-y-0 right-0 z-50 flex w-[min(20rem,90vw)] flex-col border-l border-slate-200 bg-white shadow-xl md:hidden"
+            role="dialog"
+            aria-label="Profil"
+          >
+            <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 py-3">
+              <span className="font-medium text-slate-800">Profil</span>
+              <button
+                type="button"
+                onClick={() => setProfileOpen(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-lg hover:bg-slate-100"
+                aria-label="Fermer"
+              >
+                <X className="h-5 w-5 text-slate-600" />
+              </button>
+            </div>
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+              <ProfilePanelContent session={session} status={status} onClose={() => setProfileOpen(false)} />
+            </div>
+          </aside>
+        </>
+      )}
+
+      {/* Barre latérale droite - Profil (desktop) */}
+      <aside className="hidden w-72 shrink-0 flex-col border-l border-slate-700/30 bg-slate-100 text-slate-800 shadow-xl md:flex">
+        <ProfilePanelContent session={session} status={status} />
+      </aside>
+    </div>
+  );
+}

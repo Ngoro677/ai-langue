@@ -15,13 +15,21 @@ function getDb() {
   return db;
 }
 
+function ensurePasswordColumn(db: Database.Database) {
+  const cols = db.prepare("PRAGMA table_info(users)").all() as { name: string }[];
+  if (!cols.some((c) => c.name === 'password')) {
+    db.exec(`ALTER TABLE users ADD COLUMN password TEXT;`);
+  }
+}
+
 function initSchema(db: Database.Database) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
-      email TEXT,
+      email TEXT UNIQUE,
       name TEXT,
       image TEXT,
+      password TEXT,
       created_at INTEGER DEFAULT (strftime('%s', 'now'))
     );
     CREATE TABLE IF NOT EXISTS conversations (
@@ -42,6 +50,7 @@ function initSchema(db: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_conv_user ON conversations(user_id);
     CREATE INDEX IF NOT EXISTS idx_msg_conv ON messages(conversation_id);
   `);
+  ensurePasswordColumn(db);
 }
 
 let db: Database.Database | null = null;

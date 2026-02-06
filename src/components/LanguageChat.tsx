@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useSession, signIn, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 import {
   Send,
   Mic,
   MicOff,
-  LogIn,
-  LogOut,
   MessageSquare,
   History,
   Volume2,
@@ -18,6 +17,7 @@ import {
   Gauge,
   VolumeX,
   CheckCircle,
+  LogIn,
 } from 'lucide-react';
 
 type Message = { role: 'user' | 'assistant'; content: string };
@@ -52,7 +52,9 @@ function getVoicesForOptions(): { id: string; label: string; voice: SpeechSynthe
   ];
 }
 
-export default function LanguageChat() {
+type LanguageChatProps = { headerRight?: React.ReactNode };
+
+export default function LanguageChat({ headerRight }: LanguageChatProps) {
   const { data: session, status } = useSession();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -256,28 +258,32 @@ export default function LanguageChat() {
   };
 
   return (
-    <div className="flex h-dvh max-h-screen min-h-0 flex-col bg-slate-950 text-slate-100 sm:h-screen">
-      {/* Header */}
-      <header className="flex shrink-0 items-center justify-between gap-2 border-b border-slate-800 bg-slate-900/80 px-3 py-2 backdrop-blur pt-safe sm:px-4 sm:py-3">
-        <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+    <div className="flex h-full min-h-0 flex-1 flex-col bg-slate-50 text-slate-900">
+      {/* Header - style dashboard centre */}
+      <header className="flex shrink-0 items-center justify-between gap-1 border-b border-slate-200 bg-white px-2 py-2 sm:gap-2 sm:px-4 sm:py-3">
+        <div className="flex min-w-0 items-center gap-1 sm:gap-3">
           <button
             type="button"
             onClick={() => setSidebarOpen((o) => !o)}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg hover:bg-slate-800 active:bg-slate-700"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg hover:bg-slate-100 active:bg-slate-200 sm:h-10 sm:w-10"
             aria-label="Historique"
           >
-            <MessageSquare className="h-5 w-5" />
+            <MessageSquare className="h-5 w-5 text-slate-600" />
           </button>
-          <h1 className="truncate text-base font-semibold tracking-tight sm:text-lg">
-            <span className="hidden min-[480px]:inline">Apprenez </span>FR · EN · MG
+          <h1 className="truncate text-sm font-semibold tracking-tight text-slate-800 sm:text-lg">
+            <span className="hidden sm:inline">Apprenez </span>FR · EN · MG
           </h1>
         </div>
-        <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
-          <div className="relative min-w-0 max-w-[5.5rem] sm:max-w-none">
+        <div className="flex shrink-0 items-center justify-end gap-1 sm:gap-2">
+          {/* Mobile: Voix en icône seule (select invisible par-dessus) */}
+          <div className="relative h-9 w-9 shrink-0 md:hidden">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-500" aria-hidden>
+              <Volume2 className="h-4 w-4" />
+            </span>
             <select
               value={selectedVoiceId}
               onChange={(e) => setSelectedVoiceId(e.target.value)}
-              className="w-full min-w-0 appearance-none rounded-lg border border-slate-700 bg-slate-800 py-2 pl-2 pr-6 text-xs text-slate-200 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 sm:pl-3 sm:pr-8 sm:text-sm"
+              className="absolute inset-0 cursor-pointer rounded-lg opacity-0"
               title="Voix de l'assistant"
             >
               {voiceOptions.map((v) => (
@@ -286,14 +292,32 @@ export default function LanguageChat() {
                 </option>
               ))}
             </select>
-            <Volume2 className="pointer-events-none absolute right-1.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400 sm:right-2 sm:h-4 sm:w-4" />
           </div>
-          <div className="relative flex min-w-0 items-center gap-0.5 sm:gap-1">
-            <Gauge className="hidden h-4 w-4 shrink-0 text-slate-400 sm:block" aria-hidden />
+          {/* Desktop: Voix select visible */}
+          <div className="relative hidden min-w-0 max-w-[5.5rem] md:block md:max-w-none">
+            <select
+              value={selectedVoiceId}
+              onChange={(e) => setSelectedVoiceId(e.target.value)}
+              className="w-full min-w-0 appearance-none rounded-lg border border-slate-300 bg-white py-2 pl-3 pr-8 text-sm text-slate-700 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+              title="Voix de l'assistant"
+            >
+              {voiceOptions.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.label}
+                </option>
+              ))}
+            </select>
+            <Volume2 className="pointer-events-none absolute right-2 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          </div>
+          {/* Mobile: Vitesse en icône seule */}
+          <div className="relative h-9 w-9 shrink-0 md:hidden">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-500" aria-hidden>
+              <Gauge className="h-4 w-4" />
+            </span>
             <select
               value={speechSpeed}
               onChange={(e) => setSpeechSpeed(e.target.value as (typeof SPEECH_SPEED_OPTIONS)[number]['id'])}
-              className="w-16 appearance-none rounded-lg border border-slate-700 bg-slate-800 py-2 pl-1.5 pr-6 text-xs text-slate-200 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 sm:w-auto sm:pl-2 sm:pr-7 sm:text-sm"
+              className="absolute inset-0 cursor-pointer rounded-lg opacity-0"
               title="Vitesse de lecture"
             >
               {SPEECH_SPEED_OPTIONS.map((s) => (
@@ -303,86 +327,84 @@ export default function LanguageChat() {
               ))}
             </select>
           </div>
+          {/* Desktop: Vitesse select visible */}
+          <div className="relative hidden sm:block">
+            <Gauge className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden />
+            <select
+              value={speechSpeed}
+              onChange={(e) => setSpeechSpeed(e.target.value as (typeof SPEECH_SPEED_OPTIONS)[number]['id'])}
+              className="w-16 appearance-none rounded-lg border border-slate-300 bg-white py-2 pl-2 pr-7 text-sm text-slate-700 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 md:w-auto md:pl-2 md:pr-7"
+              title="Vitesse de lecture"
+            >
+              {SPEECH_SPEED_OPTIONS.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          {/* Lecture auto: toujours icône, texte masqué sur mobile */}
           <button
             type="button"
             onClick={() => setAutoPlayVoice((v) => !v)}
             title={autoPlayVoice ? 'Désactiver la lecture automatique' : 'Lecture auto des réponses'}
-            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border sm:h-auto sm:w-auto sm:px-2.5 sm:py-2 ${autoPlayVoice ? 'border-amber-500 bg-amber-500/20 text-amber-400' : 'border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border sm:h-auto sm:w-auto sm:px-2.5 sm:py-2 ${autoPlayVoice ? 'border-amber-500 bg-amber-500/20 text-amber-600' : 'border-slate-300 bg-white text-slate-500 hover:bg-slate-50'}`}
           >
             {autoPlayVoice ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
             <span className="hidden sm:inline">{autoPlayVoice ? 'Lecture auto' : 'Sans lecture'}</span>
           </button>
-          {status === 'loading' ? (
-            <Loader2 className="h-5 w-5 shrink-0 animate-spin text-slate-400" />
-          ) : session?.user ? (
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              {/* eslint-disable-next-line @next/next/no-img-element -- Avatar Google, URL dynamique */}
-              <img
-                src={session.user.image ?? ''}
-                alt=""
-                className="h-8 w-8 shrink-0 rounded-full"
-              />
-              <button
-                type="button"
-                onClick={() => signOut()}
-                className="hidden rounded-lg border border-slate-700 px-2 py-1.5 text-sm hover:bg-slate-800 min-[480px]:flex min-[480px]:items-center min-[480px]:gap-1 sm:px-3"
-              >
-                <LogOut className="h-4 w-4" />
-                <span className="hidden sm:inline">Déconnexion</span>
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => signIn('google')}
-              className="flex min-h-[2.25rem] items-center gap-1 rounded-lg bg-amber-500 px-2.5 py-1.5 text-sm font-medium text-slate-900 hover:bg-amber-400 active:bg-amber-500 sm:px-3"
+          {/* Slot profil (mobile) ou lien connexion */}
+          {headerRight ?? (!session?.user && status !== 'loading' && (
+            <Link
+              href="/login"
+              className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500 text-slate-900 hover:bg-amber-400 md:hidden"
+              aria-label="Se connecter"
             >
-              <LogIn className="h-4 w-4 shrink-0" />
-              <span className="hidden min-[480px]:inline">Connexion </span>Google
-            </button>
-          )}
+              <LogIn className="h-4 w-4" />
+            </Link>
+          ))}
         </div>
       </header>
 
-      {/* Sidebar historique (connecté) */}
+      {/* Sidebar historique (connecté) - style dashboard */}
       {sidebarOpen && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-sm md:hidden"
+            className="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-sm md:hidden"
             onClick={() => setSidebarOpen(false)}
             aria-hidden
           />
-          <div className="fixed inset-y-0 left-0 z-50 w-[min(20rem,85vw)] max-w-full border-r border-slate-800 bg-slate-900 pt-safe md:static md:z-0 md:block md:max-w-xs md:flex-1 md:pt-0">
-            <div className="flex items-center justify-between border-b border-slate-800 p-3">
-              <span className="flex items-center gap-2 text-sm font-medium text-slate-300">
+          <div className="fixed inset-y-0 left-0 z-50 w-[min(20rem,85vw)] max-w-full border-r border-slate-200 bg-white pt-safe md:static md:z-0 md:block md:max-w-xs md:flex-1 md:pt-0">
+            <div className="flex items-center justify-between border-b border-slate-200 p-3">
+              <span className="flex items-center gap-2 text-sm font-medium text-slate-700">
                 <History className="h-4 w-4 shrink-0" />
                 Historique
               </span>
               <button
                 type="button"
                 onClick={() => setSidebarOpen(false)}
-                className="flex h-10 w-10 items-center justify-center rounded-lg hover:bg-slate-800 active:bg-slate-700 md:h-8 md:w-8"
+                className="flex h-10 w-10 items-center justify-center rounded-lg hover:bg-slate-100 active:bg-slate-200 md:h-8 md:w-8"
                 aria-label="Fermer"
               >
-                <ChevronDown className="h-5 w-5 rotate-90" />
+                <ChevronDown className="h-5 w-5 rotate-90 text-slate-600" />
               </button>
             </div>
             {!session?.user ? (
               <p className="p-4 text-sm text-slate-500">
-                Connectez-vous avec Google pour enregistrer vos conversations.
+                <Link href="/login" className="text-amber-600 hover:underline">Connectez-vous</Link> pour enregistrer vos conversations.
               </p>
             ) : (
               <>
                 <button
                   type="button"
                   onClick={newChat}
-                  className="mx-3 mt-2 w-[calc(100%-1.5rem)] rounded-lg border border-slate-700 py-2 text-sm hover:bg-slate-800"
+                  className="mx-3 mt-2 flex w-[calc(100%-1.5rem)] items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
                 >
-                  Nouvelle conversation
+                  + Créer nouveau
                 </button>
                 {conversationsLoading ? (
                   <div className="flex justify-center py-6">
-                    <Loader2 className="h-6 w-6 animate-spin text-slate-500" />
+                    <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
                   </div>
                 ) : conversations.length === 0 ? (
                   <p className="p-4 text-center text-sm text-slate-500">Aucune conversation pour le moment.</p>
@@ -393,7 +415,7 @@ export default function LanguageChat() {
                       <button
                         type="button"
                         onClick={() => loadConversation(c.id)}
-                        className={`w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-800 ${conversationId === c.id ? 'bg-slate-800' : ''}`}
+                        className={`w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-100 ${conversationId === c.id ? 'bg-amber-50 text-amber-800' : 'text-slate-700'}`}
                       >
                         {c.title}
                       </button>
@@ -407,37 +429,37 @@ export default function LanguageChat() {
         </>
       )}
 
-      {/* Messages */}
-      <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
+      {/* Messages - style dashboard (bulles gris / rose) */}
+      <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-slate-50">
         <div className="mx-auto max-w-3xl px-3 py-4 sm:px-4 sm:py-6">
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center px-2 py-12 text-center sm:py-16">
               {session?.user ? (
                 <>
                   <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full border-2 border-emerald-500/50 bg-emerald-500/10 sm:mb-4 sm:h-20 sm:w-20">
-                    <CheckCircle className="h-10 w-10 text-emerald-500 sm:h-12 sm:w-12" />
+                    <CheckCircle className="h-10 w-10 text-emerald-600 sm:h-12 sm:w-12" />
                   </div>
-                  <h2 className="mb-1.5 text-lg font-semibold text-slate-200 sm:mb-2 sm:text-xl">
+                  <h2 className="mb-1.5 text-lg font-semibold text-slate-800 sm:mb-2 sm:text-xl">
                     Bienvenue, {session.user.name?.split(' ')[0] ?? session.user.email?.split('@')[0] ?? 'vous'}
                   </h2>
-                  <p className="max-w-sm text-sm text-slate-400 sm:text-base">
+                  <p className="max-w-sm text-sm text-slate-600 sm:text-base">
                     Vous êtes connecté. Vos conversations sont enregistrées. Posez des questions ou envoyez un message vocal pour commencer.
                   </p>
-                  <p className="mt-2 text-xs text-emerald-500/90 sm:mt-3 sm:text-sm">
+                  <p className="mt-2 text-xs text-emerald-600 sm:mt-3 sm:text-sm">
                     Historique sauvegardé
                   </p>
                 </>
               ) : (
                 <>
-                  <Bot className="mb-3 h-12 w-12 text-amber-500/80 sm:mb-4 sm:h-14 sm:w-14" />
-                  <h2 className="mb-1.5 text-lg font-semibold text-slate-200 sm:mb-2 sm:text-xl">
+                  <Bot className="mb-3 h-12 w-12 text-amber-500 sm:mb-4 sm:h-14 sm:w-14" />
+                  <h2 className="mb-1.5 text-lg font-semibold text-slate-800 sm:mb-2 sm:text-xl">
                     Assistant langues
                   </h2>
-                  <p className="max-w-sm text-sm text-slate-400 sm:text-base">
+                  <p className="max-w-sm text-sm text-slate-600 sm:text-base">
                     Pratiquez le français, l&apos;anglais et le malagasy. Posez des questions, envoyez un message vocal, apprenez verbes et vocabulaire.
                   </p>
                   <p className="mt-2 text-xs text-slate-500 sm:mt-3 sm:text-sm">
-                    Connexion Google = historique sauvegardé.
+                    <Link href="/login" className="text-amber-600 hover:underline">Connectez-vous</Link> pour sauvegarder l&apos;historique.
                   </p>
                 </>
               )}
@@ -449,15 +471,15 @@ export default function LanguageChat() {
               className={`mb-3 flex gap-2 sm:mb-4 sm:gap-3 ${m.role === 'user' ? 'justify-end' : ''}`}
             >
               {m.role === 'assistant' && (
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-500/20">
-                  <Bot className="h-4 w-4 text-amber-500" />
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200">
+                  <Bot className="h-4 w-4 text-amber-600" />
                 </div>
               )}
               <div
-                className={`max-w-[90%] rounded-2xl px-3 py-2 sm:max-w-[85%] sm:px-4 sm:py-2.5 ${
+                className={`max-w-[90%] ilo rounded-2xl px-3 py-2 sm:max-w-[85%] sm:px-4 sm:py-2.5 ${
                   m.role === 'user'
-                    ? 'bg-amber-500/20 text-slate-100'
-                    : 'bg-slate-800/80 text-slate-200'
+                    ? 'bg-yellow-600/90 text-white'
+                    : 'bg-slate-200 text-slate-800'
                 }`}
               >
                 <p className="whitespace-pre-wrap break-words text-sm">{m.content}</p>
@@ -465,7 +487,7 @@ export default function LanguageChat() {
                   <button
                     type="button"
                     onClick={() => speak(m.content)}
-                    className="mt-1.5 flex min-h-[2rem] min-w-[2rem] items-center gap-1 rounded text-xs text-amber-400 hover:text-amber-300 active:bg-slate-700/50 sm:mt-2"
+                    className="mt-1.5 flex min-h-[2rem] min-w-[2rem] items-center gap-1 rounded text-xs text-amber-600 hover:text-amber-700 sm:mt-2"
                   >
                     <Volume2 className="h-3.5 w-3.5 shrink-0" />
                     Écouter
@@ -473,19 +495,19 @@ export default function LanguageChat() {
                 )}
               </div>
               {m.role === 'user' && (
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-700">
-                  <User className="h-4 w-4 text-slate-400" />
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-300">
+                  <User className="h-4 w-4 text-slate-600" />
                 </div>
               )}
             </div>
           ))}
           {loading && (
             <div className="mb-3 flex gap-2 sm:mb-4 sm:gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-500/20">
-                <Bot className="h-4 w-4 text-amber-500" />
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200">
+                <Bot className="h-4 w-4 text-amber-600" />
               </div>
-              <div className="rounded-2xl bg-slate-800/80 px-3 py-2.5 sm:px-4">
-                <Loader2 className="h-5 w-5 animate-spin text-amber-500" />
+              <div className="rounded-2xl bg-slate-200 px-3 py-2.5 sm:px-4">
+                <Loader2 className="h-5 w-5 animate-spin text-amber-600" />
               </div>
             </div>
           )}
@@ -493,31 +515,30 @@ export default function LanguageChat() {
         </div>
       </main>
 
-      {/* Input */}
-      <div className="shrink-0 border-t border-slate-800 bg-slate-900/80 p-3 backdrop-blur pb-safe sm:p-4">
+      {/* Input - style dashboard */}
+      <div className="shrink-0 border-t border-slate-200 bg-white p-3 sm:p-4">
         <div className="mx-auto max-w-3xl">
-          <div className="flex gap-1.5 sm:gap-2">
+          <div className="flex gap-2">
             <button
               type="button"
               onClick={isRecording ? stopRecording : startRecording}
-              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl active:scale-95 sm:h-12 sm:w-12 ${isRecording ? 'bg-red-500/20 text-red-400' : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200'}`}
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl active:scale-95 sm:h-12 sm:w-12 ${isRecording ? 'bg-red-500/20 text-red-600' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700'}`}
               title="Message vocal : parlez, envoi automatique"
             >
               {isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
             </button>
-            <input
-              type="text"
+            <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage(input)}
-              placeholder="Écrivez ou parlez (FR, EN, MG)..."
-              className="min-w-0 flex-1 rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-base text-slate-100 placeholder-slate-500 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 sm:px-4 sm:py-3 [font-size:16px]"
+              placeholder="Écrivez un message..."
+              className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-base text-slate-900 placeholder-slate-400 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 sm:px-4 sm:py-3 [font-size:16px]"
             />
             <button
               type="button"
               onClick={() => sendMessage(input)}
               disabled={loading || !input.trim()}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-slate-900 hover:bg-amber-400 disabled:opacity-50 active:scale-95 sm:h-12 sm:w-12"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white hover:bg-amber-400 disabled:opacity-50 active:scale-95 sm:h-12 sm:w-12"
             >
               <Send className="h-5 w-5" />
             </button>
