@@ -56,7 +56,7 @@ function ProfilePanelContent({
                     <img
                       src={session.user.image}
                       alt=""
-                      className="h-14 w-14 rounded-full bg-slate-300 object-cover"
+                      className="h-14 w-14 ilo rounded-full bg-slate-300 object-cover"
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = 'none';
                         const parent = (e.target as HTMLImageElement).parentElement;
@@ -64,12 +64,12 @@ function ProfilePanelContent({
                         if (fallback) (fallback as HTMLElement).style.display = 'flex';
                       }}
                     />
-                    <div data-avatar-fallback className="absolute inset-0 hidden h-14 w-14 items-center justify-center rounded-full bg-amber-500/20 text-xl font-semibold text-amber-700" aria-hidden>
+                    <div data-avatar-fallback className="absolute ilo inset-0 hidden h-14 w-14 items-center justify-center rounded-full bg-[#1e3a5f] text-xl font-semibold text-white" aria-hidden>
                       {(session.user.name ?? session.user.email ?? '?').charAt(0).toUpperCase()}
                     </div>
                   </>
                 ) : (
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-500/20 text-xl font-semibold text-amber-700">
+                  <div className="flex h-14 w-14 items-center ilo justify-center rounded-full bg-[#1e3a5f] text-xl font-semibold text-white">
                     {(session.user.name ?? session.user.email ?? '?').charAt(0).toUpperCase()}
                   </div>
                 )}
@@ -84,7 +84,7 @@ function ProfilePanelContent({
             <button
               type="button"
               onClick={() => { signOut(); onClose?.(); }}
-              className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              className="mt-3 bouton-ilo flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
               <LogOut className="h-4 w-4" />
               Déconnexion
@@ -165,7 +165,7 @@ export default function DashboardLayout() {
           <div className="h-8 w-8 animate-pulse rounded-full bg-slate-200" />
         ) : session?.user ? (
           <>
-            <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-amber-500/20 text-sm font-semibold text-amber-700">
+            <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-[#1e3a5f] text-sm font-semibold text-white">
               {session.user.image ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img src={session.user.image} alt="" className="h-full w-full object-cover" />
