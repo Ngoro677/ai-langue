@@ -37,19 +37,25 @@ const SPEECH_SPEED_OPTIONS = [
 
 function getVoicesForOptions(): { id: string; label: string; voice: SpeechSynthesisVoice | null }[] {
   if (typeof window === 'undefined') return VOICE_OPTIONS.map((v) => ({ ...v, voice: null }));
-  const voices = speechSynthesis.getVoices();
-  const fr = voices.filter((v) => v.lang.startsWith('fr'));
-  const en = voices.filter((v) => v.lang.startsWith('en'));
-  const maleFr = fr.find((v) => /paul|male|david|nicolas|thomas/i.test(v.name)) || fr[0];
-  const maleEn = en.find((v) => /male|david|daniel|mark|james/i.test(v.name)) || en[0];
-  const femaleFr = fr.find((v) => /female|claire|marie|amelie|alice/i.test(v.name)) || fr[1] || fr[0];
-  const femaleEn = en.find((v) => /female|samantha|victoria|karen|zira/i.test(v.name)) || en[1] || en[0];
-  return [
-    { id: 'male1', label: 'Voix homme 1', voice: maleFr || voices[0] },
-    { id: 'male2', label: 'Voix homme 2', voice: maleEn || voices[1] },
-    { id: 'female1', label: 'Voix femme 1', voice: femaleFr || voices[2] },
-    { id: 'female2', label: 'Voix femme 2', voice: femaleEn || voices[3] },
-  ];
+  try {
+    const synth = window.speechSynthesis;
+    if (!synth) return VOICE_OPTIONS.map((v) => ({ ...v, voice: null }));
+    const voices = synth.getVoices();
+    const fr = voices.filter((v) => v.lang.startsWith('fr'));
+    const en = voices.filter((v) => v.lang.startsWith('en'));
+    const maleFr = fr.find((v) => /paul|male|david|nicolas|thomas/i.test(v.name)) || fr[0];
+    const maleEn = en.find((v) => /male|david|daniel|mark|james/i.test(v.name)) || en[0];
+    const femaleFr = fr.find((v) => /female|claire|marie|amelie|alice/i.test(v.name)) || fr[1] || fr[0];
+    const femaleEn = en.find((v) => /female|samantha|victoria|karen|zira/i.test(v.name)) || en[1] || en[0];
+    return [
+      { id: 'male1', label: 'Voix homme 1', voice: maleFr ?? voices[0] ?? null },
+      { id: 'male2', label: 'Voix homme 2', voice: maleEn ?? voices[1] ?? null },
+      { id: 'female1', label: 'Voix femme 1', voice: femaleFr ?? voices[2] ?? null },
+      { id: 'female2', label: 'Voix femme 2', voice: femaleEn ?? voices[3] ?? null },
+    ];
+  } catch {
+    return VOICE_OPTIONS.map((v) => ({ ...v, voice: null }));
+  }
 }
 
 type LanguageChatProps = { headerRight?: React.ReactNode };
@@ -73,10 +79,20 @@ export default function LanguageChat({ headerRight }: LanguageChatProps) {
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    const load = () => setVoiceOptions(getVoicesForOptions());
+    const load = () => {
+      try {
+        setVoiceOptions(getVoicesForOptions());
+      } catch {
+        setVoiceOptions(VOICE_OPTIONS.map((v) => ({ ...v, voice: null })));
+      }
+    };
     load();
-    if (typeof window !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
-      speechSynthesis.onvoiceschanged = load;
+    try {
+      if (typeof window !== 'undefined' && window.speechSynthesis?.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = load;
+      }
+    } catch {
+      // ignore
     }
   }, []);
 
@@ -112,15 +128,20 @@ export default function LanguageChat({ headerRight }: LanguageChatProps) {
 
   const speak = useCallback(
     (text: string) => {
+      if (!text?.trim()) return;
       if (typeof window === 'undefined' || !window.speechSynthesis) return;
-      window.speechSynthesis.cancel();
-      const opts = voiceOptions.find((v) => v.id === selectedVoiceId);
-      const voice = opts?.voice;
-      const u = new SpeechSynthesisUtterance(text);
-      u.rate = speedRate;
-      u.pitch = 1;
-      if (voice) u.voice = voice;
-      window.speechSynthesis.speak(u);
+      try {
+        window.speechSynthesis.cancel();
+        const opts = voiceOptions.find((v) => v.id === selectedVoiceId);
+        const voice = opts?.voice ?? null;
+        const u = new SpeechSynthesisUtterance(text.trim());
+        u.rate = speedRate;
+        u.pitch = 1;
+        if (voice) u.voice = voice;
+        window.speechSynthesis.speak(u);
+      } catch {
+        // Lecture audio non disponible (ex. WebView Android / Messenger)
+      }
     },
     [selectedVoiceId, voiceOptions, speedRate]
   );
@@ -210,25 +231,29 @@ export default function LanguageChat({ headerRight }: LanguageChatProps) {
 
   const startRecording = () => {
     if (typeof window === 'undefined') return;
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) {
-      alert('Reconnaissance vocale non supportée sur ce navigateur.');
-      return;
+    try {
+      const SR = window.SpeechRecognition || (window as unknown as { webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition;
+      if (!SR) {
+        alert('Reconnaissance vocale non supportée sur ce navigateur.');
+        return;
+      }
+      const rec = new SR();
+      rec.continuous = false;
+      rec.interimResults = false;
+      rec.lang = 'fr-FR';
+      rec.onresult = (e: SpeechRecognitionEvent) => {
+        const r = e.results[e.results.length - 1];
+        const t = r?.[0]?.transcript?.trim();
+        if (t) sendMessage(t);
+      };
+      rec.onend = () => setIsRecording(false);
+      rec.onerror = () => setIsRecording(false);
+      recognitionRef.current = rec;
+      rec.start();
+      setIsRecording(true);
+    } catch {
+      alert('Reconnaissance vocale non disponible.');
     }
-    const rec = new SR();
-    rec.continuous = false;
-    rec.interimResults = false;
-    rec.lang = 'fr-FR';
-    rec.onresult = (e: SpeechRecognitionEvent) => {
-      const r = e.results[e.results.length - 1];
-      const t = r?.[0]?.transcript?.trim();
-      if (t) sendMessage(t);
-    };
-    rec.onend = () => setIsRecording(false);
-    rec.onerror = () => setIsRecording(false);
-    recognitionRef.current = rec;
-    rec.start();
-    setIsRecording(true);
   };
 
   const stopRecording = () => {
@@ -327,13 +352,13 @@ export default function LanguageChat({ headerRight }: LanguageChatProps) {
               ))}
             </select>
           </div>
-          {/* Desktop: Vitesse select visible */}
+          {/* Desktop: Vitesse select visible (padding gauche pour l'icône) */}
           <div className="relative hidden sm:block">
-            <Gauge className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden />
+            <Gauge className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" aria-hidden />
             <select
               value={speechSpeed}
               onChange={(e) => setSpeechSpeed(e.target.value as (typeof SPEECH_SPEED_OPTIONS)[number]['id'])}
-              className="w-16 appearance-none rounded-lg border border-slate-300 bg-white py-2 pl-2 pr-7 text-sm text-slate-700 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 md:w-auto md:pl-2 md:pr-7"
+              className="w-16 appearance-none rounded-lg border border-slate-300 bg-white py-2 pl-8 pr-7 text-sm text-slate-700 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 md:w-auto"
               title="Vitesse de lecture"
             >
               {SPEECH_SPEED_OPTIONS.map((s) => (

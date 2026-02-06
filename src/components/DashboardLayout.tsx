@@ -189,9 +189,14 @@ export default function DashboardLayout() {
       {/* Barre latérale gauche - icônes */}
       <aside className="flex w-16 shrink-0 flex-col items-center border-r border-slate-700/50 bg-slate-900/90 pt-safe">
         <div className="flex h-14 w-full items-center justify-center border-b border-slate-700/50">
-          <div className="flex h-9 ilo w-9 items-center justify-center rounded-full bg-amber-500/20 text-amber-400">
-            <span className="text-sm font-bold">IA</span>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo.png"
+            alt="IAlangue"
+            className="h-9 w-9 rounded-full object-cover"
+            width={36}
+            height={36}
+          />
         </div>
         <nav className="flex flex-1 flex-col items-center gap-1 py-3">
           {leftNavItems.map(({ icon: Icon, label, active }) => (
