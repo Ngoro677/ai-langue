@@ -2,12 +2,19 @@ import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
 
-const dbPath = path.join(process.cwd(), 'data', 'ialangue.db');
+// Sur Vercel le filesystem est en lecture seule sauf /tmp → on met la DB dans /tmp
+const isVercel = process.env.VERCEL === '1';
+const dbDir = isVercel ? '/tmp/data' : path.join(process.cwd(), 'data');
+const dbPath = path.join(dbDir, 'ialangue.db');
 
 function getDb() {
-  const dir = path.dirname(dbPath);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+  try {
+    if (!fs.existsSync(dbDir)) {
+      fs.mkdirSync(dbDir, { recursive: true });
+    }
+  } catch (err) {
+    console.error('DB mkdir error:', err);
+    throw err;
   }
   const db = new Database(dbPath);
   db.pragma('journal_mode = WAL');
