@@ -161,6 +161,30 @@ export default function LanguageChat({ headerRight }: LanguageChatProps) {
   const speak = useCallback(
     (text: string) => {
       if (!text?.trim()) return;
+      const win = typeof window !== 'undefined' ? window : null;
+      const cap = win && (win as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
+      if (cap?.isNativePlatform?.()) {
+        const doNativeTts = async () => {
+          try {
+            const { TextToSpeech } = await import('@capacitor-community/text-to-speech');
+            await TextToSpeech.stop();
+            const opts = VOICE_OPTIONS.find((v) => v.id === selectedVoiceId);
+            const lang = opts?.lang ?? 'fr-FR';
+            await TextToSpeech.speak({
+              text: text.trim(),
+              lang,
+              rate: speedRate,
+              pitch: 1,
+              volume: 1,
+              queueStrategy: 0,
+            });
+          } catch {
+            // Fallback silencieux si le plugin échoue
+          }
+        };
+        void doNativeTts();
+        return;
+      }
       if (typeof window === 'undefined' || !window.speechSynthesis) return;
       unlockAudio();
       try {
@@ -171,6 +195,7 @@ export default function LanguageChat({ headerRight }: LanguageChatProps) {
         u.rate = speedRate;
         u.pitch = 1;
         if (voice) u.voice = voice;
+        else u.lang = 'fr-FR';
         window.speechSynthesis.speak(u);
       } catch {
         // Lecture audio non disponible (ex. WebView Android / Messenger)

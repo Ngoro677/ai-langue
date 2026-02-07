@@ -1,10 +1,19 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import Providers from "@/components/Providers";
+import OfflineGuard from "@/components/OfflineGuard";
 
 export const metadata: Metadata = {
   title: "Apprenez des langues — FR · EN · MG",
   description: "Assistant pour apprendre le français, l'anglais et le malagasy. Dialogue, vocabulaire, verbes et correction vocale.",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1e3a5f",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -15,7 +24,7 @@ export default function RootLayout({
   return (
     <html lang="fr" className="h-full">
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
+        <meta name="theme-color" content="#1e3a5f" />
         <link rel="icon" href="/logo.png" type="image/png" />
         <link rel="apple-touch-icon" href="/logo.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -28,7 +37,9 @@ export default function RootLayout({
       </head>
       <body className="antialiased min-h-full touch-manipulation font-sans">
         <Providers>
-          {children}
+          <OfflineGuard>
+            {children}
+          </OfflineGuard>
         </Providers>
       </body>
     </html>
