@@ -18,9 +18,10 @@ import {
   VolumeX,
   CheckCircle,
   LogIn,
+  Play,
 } from 'lucide-react';
 
-type Message = { role: 'user' | 'assistant'; content: string };
+type Message = { role: 'user' | 'assistant'; content: string; audioUrl?: string };
 
 const VOICE_OPTIONS = [
   { id: 'male1', label: 'Voix homme 1', lang: 'fr-FR' },
@@ -77,6 +78,10 @@ export default function LanguageChat({ headerRight }: LanguageChatProps) {
   const recognitionRef = useRef<{ stop: () => void } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const voiceChunksRef = useRef<Blob[]>([]);
+  const lastVoiceTranscriptRef = useRef<string>('');
+  const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
     const load = () => {
@@ -233,7 +238,7 @@ export default function LanguageChat({ headerRight }: LanguageChatProps) {
   );
 
   const sendMessage = useCallback(
-    async (text: string) => {
+    async (text: string, audioUrl?: string) => {
       const trimmed = text.trim();
       if (!trimmed || loading) return;
 
@@ -248,7 +253,7 @@ export default function LanguageChat({ headerRight }: LanguageChatProps) {
         }
       }
 
-      const userMessage: Message = { role: 'user', content: trimmed };
+      const userMessage: Message = { role: 'user', content: trimmed, ...(audioUrl && { audioUrl }) };
       setMessages((prev) => [...prev, userMessage]);
       setInput('');
       setLoading(true);
@@ -287,7 +292,7 @@ export default function LanguageChat({ headerRight }: LanguageChatProps) {
     [loading, messages, session, conversationId, saveMessage, updateConversationTitle, autoPlayVoice, speak]
   );
 
-  const startRecording = () => {
+  const startRecording = async () => {
     if (typeof window === 'undefined') return;
     try {
       const SR = window.SpeechRecognition || (window as unknown as { webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition;
@@ -298,6 +303,34 @@ export default function LanguageChat({ headerRight }: LanguageChatProps) {
           : 'Reconnaissance vocale non supportée. Utilisez Chrome sur Android ou le clavier.');
         return;
       }
+      lastVoiceTranscriptRef.current = '';
+      voiceChunksRef.current = [];
+      let stream: MediaStream | null = null;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        streamRef.current = stream;
+      } catch {
+        streamRef.current = null;
+      }
+      if (stream && window.MediaRecorder) {
+        const mime = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
+        const mr = new MediaRecorder(stream);
+        mediaRecorderRef.current = mr;
+        mr.ondataavailable = (e) => { if (e.data.size > 0) voiceChunksRef.current.push(e.data); };
+        mr.onstop = () => {
+          streamRef.current?.getTracks().forEach((t) => t.stop());
+          streamRef.current = null;
+          if (voiceChunksRef.current.length === 0) {
+            sendMessage(lastVoiceTranscriptRef.current || '');
+            return;
+          }
+          const blob = new Blob(voiceChunksRef.current, { type: mime });
+          const url = URL.createObjectURL(blob);
+          const text = lastVoiceTranscriptRef.current?.trim() || '(Message vocal)';
+          sendMessage(text, url);
+        };
+        mr.start(200);
+      }
       const rec = new SR();
       rec.continuous = false;
       rec.interimResults = false;
@@ -305,10 +338,32 @@ export default function LanguageChat({ headerRight }: LanguageChatProps) {
       rec.onresult = (e: SpeechRecognitionEvent) => {
         const r = e.results[e.results.length - 1];
         const t = r?.[0]?.transcript?.trim();
-        if (t) sendMessage(t);
+        if (t) lastVoiceTranscriptRef.current = t;
       };
-      rec.onend = () => setIsRecording(false);
-      rec.onerror = () => setIsRecording(false);
+      rec.onend = () => {
+        if (!mediaRecorderRef.current) {
+          if (lastVoiceTranscriptRef.current) sendMessage(lastVoiceTranscriptRef.current);
+          setIsRecording(false);
+          return;
+        }
+        mediaRecorderRef.current.stop();
+        mediaRecorderRef.current = null;
+        setIsRecording(false);
+      };
+      rec.onerror = () => {
+        if (mediaRecorderRef.current) {
+          try {
+            mediaRecorderRef.current.stop();
+          } catch {
+            streamRef.current?.getTracks().forEach((t) => t.stop());
+          }
+          mediaRecorderRef.current = null;
+        }
+        streamRef.current?.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+        if (lastVoiceTranscriptRef.current) sendMessage(lastVoiceTranscriptRef.current);
+        setIsRecording(false);
+      };
       recognitionRef.current = rec;
       rec.start();
       setIsRecording(true);
@@ -320,7 +375,6 @@ export default function LanguageChat({ headerRight }: LanguageChatProps) {
   const stopRecording = () => {
     recognitionRef.current?.stop();
     recognitionRef.current = null;
-    setIsRecording(false);
   };
 
   const loadConversation = async (id: string) => {
@@ -577,6 +631,23 @@ export default function LanguageChat({ headerRight }: LanguageChatProps) {
                   >
                     <Volume2 className="h-3.5 w-3.5 shrink-0" />
                     Écouter
+                  </button>
+                )}
+                {m.role === 'user' && m.audioUrl && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      try {
+                        const a = new Audio(m.audioUrl);
+                        a.play();
+                      } catch {
+                        // lecture non supportée
+                      }
+                    }}
+                    className="mt-1.5 flex min-h-[2rem] min-w-[2rem] items-center gap-1 rounded text-xs text-white/90 hover:text-white sm:mt-2"
+                  >
+                    <Play className="h-3.5 w-3.5 shrink-0" />
+                    Écouter ma voix
                   </button>
                 )}
               </div>
