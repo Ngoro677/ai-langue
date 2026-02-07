@@ -126,10 +126,43 @@ export default function LanguageChat({ headerRight }: LanguageChatProps) {
 
   const speedRate = SPEECH_SPEED_OPTIONS.find((s) => s.id === speechSpeed)?.rate ?? 1;
 
+  const audioUnlocked = useRef(false);
+  const unlockAudio = useCallback(() => {
+    if (audioUnlocked.current || typeof window === 'undefined') return;
+    try {
+      audioUnlocked.current = true;
+      const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (Ctx) {
+        const ctx = new Ctx();
+        if (ctx.state === 'suspended') ctx.resume();
+      }
+      if (window.speechSynthesis) {
+        const u = new SpeechSynthesisUtterance(' ');
+        (u as SpeechSynthesisUtterance & { volume?: number }).volume = 0;
+        window.speechSynthesis.speak(u);
+      }
+    } catch {
+      audioUnlocked.current = false;
+    }
+  }, []);
+
+  useEffect(() => {
+    const unlock = () => unlockAudio();
+    document.addEventListener('touchstart', unlock, { once: true, passive: true });
+    document.addEventListener('touchend', unlock, { once: true, passive: true });
+    document.addEventListener('click', unlock, { once: true, passive: true });
+    return () => {
+      document.removeEventListener('touchstart', unlock);
+      document.removeEventListener('touchend', unlock);
+      document.removeEventListener('click', unlock);
+    };
+  }, [unlockAudio]);
+
   const speak = useCallback(
     (text: string) => {
       if (!text?.trim()) return;
       if (typeof window === 'undefined' || !window.speechSynthesis) return;
+      unlockAudio();
       try {
         window.speechSynthesis.cancel();
         const opts = voiceOptions.find((v) => v.id === selectedVoiceId);
@@ -143,7 +176,7 @@ export default function LanguageChat({ headerRight }: LanguageChatProps) {
         // Lecture audio non disponible (ex. WebView Android / Messenger)
       }
     },
-    [selectedVoiceId, voiceOptions, speedRate]
+    [selectedVoiceId, voiceOptions, speedRate, unlockAudio]
   );
 
   const saveMessage = useCallback(
@@ -234,7 +267,10 @@ export default function LanguageChat({ headerRight }: LanguageChatProps) {
     try {
       const SR = window.SpeechRecognition || (window as unknown as { webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition;
       if (!SR) {
-        alert('Reconnaissance vocale non supportée sur ce navigateur.');
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        alert(isIOS
+          ? 'Le micro vocal n\'est pas disponible sur iPhone/iPad. Utilisez le clavier pour taper votre message.'
+          : 'Reconnaissance vocale non supportée. Utilisez Chrome sur Android ou le clavier.');
         return;
       }
       const rec = new SR();

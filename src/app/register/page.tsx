@@ -49,7 +49,7 @@ export default function RegisterPage() {
         setLoading(false);
         return;
       }
-      router.push('/login?registered=1');
+      router.push(`/verify-email?email=${encodeURIComponent(data.email ?? email.trim().toLowerCase())}`);
       router.refresh();
     } catch {
       setError('Une erreur est survenue.');

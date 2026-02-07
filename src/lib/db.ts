@@ -54,6 +54,13 @@ function initSchema(db: Database.Database) {
       created_at INTEGER DEFAULT (strftime('%s', 'now')),
       FOREIGN KEY (conversation_id) REFERENCES conversations(id)
     );
+    CREATE TABLE IF NOT EXISTS pending_registrations (
+      email TEXT PRIMARY KEY,
+      name TEXT,
+      password_hash TEXT NOT NULL,
+      otp TEXT NOT NULL,
+      expires_at INTEGER NOT NULL
+    );
     CREATE INDEX IF NOT EXISTS idx_conv_user ON conversations(user_id);
     CREATE INDEX IF NOT EXISTS idx_msg_conv ON messages(conversation_id);
   `);
