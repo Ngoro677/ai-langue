@@ -20,23 +20,40 @@ RÈGLES:
 - Sois concis tout en restant pédagogique. Utilise des listes à puces (•) quand tu donnes plusieurs éléments (verbes, mots de vocabulaire, etc.).
 - Ne pas inventer de faits hors linguistique.`;
 
-function cleanResponse(response: string): string {
-  return response
+const VOICE_MODE_ADDON = `
+CONTRRAINTE MODE VOCAL (prioritaire) : Réponds UNIQUEMENT en une seule phrase courte, comme dans une conversation téléphonique. Maximum 1 à 2 phrases courtes. Pas de listes à puces, pas de paragraphes, pas de tirets. Une réplique orale brève pour enchaîner vite.`;
+
+function cleanResponse(response: string, voiceMode = false): string {
+  let out = response
     .replace(/\*\*(.+?)\*\*/g, '$1')
     .replace(/\*(.+?)\*/g, '$1')
     .replace(/`(.+?)`/g, '$1')
     .replace(/\n\n\n+/g, '\n\n')
     .trim();
+  if (voiceMode) {
+    const parts = out.split(/(?<=[.!?])\s+/);
+    const first = parts[0]?.trim() ?? '';
+    const second = parts[1]?.trim();
+    const end = (s: string) => (/[.!?]$/.test(s) ? s : `${s}.`);
+    out = second ? `${end(first)} ${end(second)}` : (first ? end(first) : out.slice(0, 120));
+  }
+  return out;
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { message, history = [] } = body as { message?: string; history?: { role: string; content: string }[] };
+    const { message, history = [], voiceMode = false } = body as {
+      message?: string;
+      history?: { role: string; content: string }[];
+      voiceMode?: boolean;
+    };
 
     if (!message || typeof message !== 'string') {
       return NextResponse.json({ error: 'Message invalide' }, { status: 400 });
     }
+
+    const systemPrompt = voiceMode ? SYSTEM_PROMPT + VOICE_MODE_ADDON : SYSTEM_PROMPT;
 
     const groqApiKey = process.env.GROQ_API_KEY;
     if (!groqApiKey) {
@@ -53,7 +70,7 @@ export async function POST(request: NextRequest) {
     });
 
     const prompt = ChatPromptTemplate.fromMessages([
-      ['system', SYSTEM_PROMPT],
+      ['system', systemPrompt],
       ...(Array.isArray(history) && history.length > 0
         ? history.slice(-12).map((m: { role: string; content: string }) => [m.role === 'assistant' ? 'ai' : 'human', m.content] as [string, string])
         : []),
@@ -67,7 +84,7 @@ export async function POST(request: NextRequest) {
     ]);
 
     const response = await chain.invoke({ question: message });
-    const cleaned = cleanResponse(response);
+    const cleaned = cleanResponse(response, voiceMode);
 
     return NextResponse.json({ response: cleaned });
   } catch (error) {

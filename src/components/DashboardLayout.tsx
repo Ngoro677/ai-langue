@@ -20,16 +20,20 @@ import {
   ChevronDown,
   X,
   User,
+  MicVocal,
 } from 'lucide-react';
 import LanguageChat from '@/components/LanguageChat';
+import VoiceDialogue from '@/components/VoiceDialogue';
 
-const leftNavItems = [
-  { icon: FileText, label: 'Documents', href: '#' },
-  { icon: Calendar, label: 'Calendrier', href: '#' },
-  { icon: MessageSquare, label: 'Chat', href: '#', active: true },
-  { icon: Settings, label: 'Paramètres', href: '#' },
-  { icon: Users, label: 'Utilisateurs', href: '#' },
-  { icon: HelpCircle, label: 'Aide', href: '#' },
+type NavView = 'documents' | 'dialogue' | 'chat' | 'settings' | 'users' | 'help';
+
+const leftNavItems: { icon: typeof FileText; label: string; view: NavView }[] = [
+  { icon: FileText, label: 'Documents', view: 'documents' },
+  { icon: MicVocal, label: 'Dialogue', view: 'dialogue' },
+  { icon: MessageSquare, label: 'Chat', view: 'chat' },
+  { icon: Settings, label: 'Paramètres', view: 'settings' },
+  { icon: Users, label: 'Utilisateurs', view: 'users' },
+  { icon: HelpCircle, label: 'Aide', view: 'help' },
 ];
 
 function ProfilePanelContent({
@@ -151,6 +155,7 @@ function ProfilePanelContent({
 export default function DashboardLayout() {
   const { data: session, status } = useSession();
   const [profileOpen, setProfileOpen] = useState(false);
+  const [activeView, setActiveView] = useState<NavView>('chat');
 
   const mobileProfileTrigger = (
     <div className="flex items-center md:hidden">
@@ -199,28 +204,67 @@ export default function DashboardLayout() {
           />
         </div>
         <nav className="flex flex-1 flex-col items-center gap-1 py-3">
-          {leftNavItems.map(({ icon: Icon, label, active }) => (
-            <Link
-              key={label}
-              href={Icon === MessageSquare ? '/' : '#'}
-              className={`relative flex h-11 w-11 items-center justify-center rounded-lg transition-colors ${
-                active ? 'bg-slate-800 text-amber-400' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
-              }`}
-              title={label}
-              aria-label={label}
-            >
-              <Icon className="h-5 w-5" />
-              {active && (
-                <span className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-yellow-600" />
-              )}
-            </Link>
-          ))}
+          {leftNavItems.map(({ icon: Icon, label, view }) => {
+            const isActive = activeView === view;
+            const isDialogue = view === 'dialogue';
+            const isChat = view === 'chat';
+            const isSwitchable = isDialogue || isChat;
+
+            return (
+              <div key={label} className="group relative flex justify-center">
+                {isSwitchable ? (
+                  <button
+                    type="button"
+                    onClick={() => setActiveView(view)}
+                    className={`relative flex h-11 w-11 items-center justify-center rounded-lg transition-colors ${
+                      isActive ? 'bg-slate-800 text-amber-400' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                    }`}
+                    aria-label={label}
+                    aria-current={isActive ? 'page' : undefined}
+                  >
+                    <Icon className="h-5 w-5" />
+                    {isActive && (
+                      <span className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-yellow-600" />
+                    )}
+                  </button>
+                ) : (
+                  <Link
+                    href="#"
+                    className={`relative flex h-11 w-11 items-center justify-center rounded-lg transition-colors ${
+                      isActive ? 'bg-slate-800 text-amber-400' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                    }`}
+                    aria-label={label}
+                  >
+                    <Icon className="h-5 w-5" />
+                    {isActive && (
+                      <span className="absolute bottom-0 left-1/2 h-0.5 w-8 -translate-x-1/2 rounded-full bg-yellow-600" />
+                    )}
+                  </Link>
+                )}
+                {/* Tooltip professionnel au survol */}
+                <span
+                  role="tooltip"
+                  className="pointer-events-none absolute left-full top-1/2 z-50 ml-3 min-w-[7rem] -translate-y-1/2 scale-95 rounded-lg bg-slate-800 px-3 py-2 text-center text-sm font-medium text-slate-100 shadow-xl ring-1 ring-slate-700/50 opacity-0 transition-all duration-200 ease-out group-hover:scale-100 group-hover:opacity-100 invisible group-hover:visible"
+                >
+                  {label}
+                  <span
+                    className="absolute right-full top-1/2 -translate-y-1/2 border-[6px] border-transparent border-r-slate-800"
+                    aria-hidden
+                  />
+                </span>
+              </div>
+            );
+          })}
         </nav>
       </aside>
 
-      {/* Zone centrale - Chat IA */}
+      {/* Zone centrale - Chat ou Dialogue vocal */}
       <section className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-l-2xl bg-slate-100 text-slate-900 shadow-xl">
-        <LanguageChat headerRight={mobileProfileTrigger} />
+        {activeView === 'dialogue' ? (
+          <VoiceDialogue headerRight={mobileProfileTrigger} />
+        ) : (
+          <LanguageChat headerRight={mobileProfileTrigger} />
+        )}
       </section>
 
       {/* Overlay profil mobile (toggle) */}
