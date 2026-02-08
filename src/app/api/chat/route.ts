@@ -20,8 +20,32 @@ RÈGLES:
 - Sois concis tout en restant pédagogique. Utilise des listes à puces (•) quand tu donnes plusieurs éléments (verbes, mots de vocabulaire, etc.).
 - Ne pas inventer de faits hors linguistique.`;
 
-const VOICE_MODE_ADDON = `
-CONTRRAINTE MODE VOCAL (prioritaire) : Réponds UNIQUEMENT en une seule phrase courte, comme dans une conversation téléphonique. Maximum 1 à 2 phrases courtes. Pas de listes à puces, pas de paragraphes, pas de tirets. Une réplique orale brève pour enchaîner vite.`;
+
+function buildConversationModePrompt(preferredLang: string): string {
+  const langRule =
+    preferredLang === 'en'
+      ? 'RÉPONDS UNIQUEMENT EN ANGLAIS. Toutes tes réponses doivent être en anglais.'
+      : preferredLang === 'mg'
+        ? 'RÉPONDS UNIQUEMENT EN MALAGASY. Toutes tes réponses doivent être en malgache.'
+        : 'RÉPONDS UNIQUEMENT EN FRANÇAIS. Toutes tes réponses doivent être en français.';
+  return `Tu es un partenaire de dialogue pour pratiquer FR/EN/MG. MODE CONVERSATION (prioritaire) :
+- ${langRule}
+- Réponds UNIQUEMENT en 1 à 2 phrases courtes maximum. Pas de paragraphes, pas de listes.
+- Si l'utilisateur a une faute de frappe ou grammaire simple : corrige brièvement avant ta réponse, ex. "Tu voulais dire : [phrase correcte]. [Ta réponse]"
+- Garde les corrections ultra-courtes et efficaces. Pas d'explication longue.
+- Débat et échange rapide : réplique concise, comme dans une vraie conversation.`;
+}
+
+function buildVoiceModeAddon(preferredLang: string): string {
+  const langRule =
+    preferredLang === 'en'
+      ? 'Réponds en ANGLAIS uniquement.'
+      : preferredLang === 'mg'
+        ? 'Réponds en MALAGASY uniquement.'
+        : 'Réponds en FRANÇAIS uniquement.';
+  return `
+CONTRRAINTE MODE VOCAL (prioritaire) : ${langRule} Réponds UNIQUEMENT en une seule phrase courte, comme dans une conversation téléphonique. Maximum 1 à 2 phrases courtes. Pas de listes à puces, pas de paragraphes, pas de tirets. Une réplique orale brève pour enchaîner vite.`;
+}
 
 function cleanResponse(response: string, voiceMode = false): string {
   let out = response
@@ -43,17 +67,24 @@ function cleanResponse(response: string, voiceMode = false): string {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { message, history = [], voiceMode = false } = body as {
+    const { message, history = [], voiceMode = false, conversationMode = false, preferredLanguage = 'fr' } = body as {
       message?: string;
       history?: { role: string; content: string }[];
       voiceMode?: boolean;
+      conversationMode?: boolean;
+      preferredLanguage?: 'fr' | 'en' | 'mg';
     };
 
     if (!message || typeof message !== 'string') {
       return NextResponse.json({ error: 'Message invalide' }, { status: 400 });
     }
 
-    const systemPrompt = voiceMode ? SYSTEM_PROMPT + VOICE_MODE_ADDON : SYSTEM_PROMPT;
+    const lang = preferredLanguage === 'en' || preferredLanguage === 'mg' ? preferredLanguage : 'fr';
+    const systemPrompt = conversationMode
+      ? buildConversationModePrompt(lang)
+      : voiceMode
+        ? SYSTEM_PROMPT + buildVoiceModeAddon(lang)
+        : SYSTEM_PROMPT;
 
     const groqApiKey = process.env.GROQ_API_KEY;
     if (!groqApiKey) {
@@ -84,7 +115,7 @@ export async function POST(request: NextRequest) {
     ]);
 
     const response = await chain.invoke({ question: message });
-    const cleaned = cleanResponse(response, voiceMode);
+    const cleaned = cleanResponse(response, voiceMode || conversationMode);
 
     return NextResponse.json({ response: cleaned });
   } catch (error) {

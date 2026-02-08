@@ -19,6 +19,9 @@ import {
   PhoneCall,
   PhoneOff,
 } from 'lucide-react';
+import LanguageSelectModal, { type DialogueLang, LANG_OPTIONS } from '@/components/LanguageSelectModal';
+
+const DIALOGUE_LANG_KEY = 'ialangue-dialogue-lang';
 
 type VoiceMessage = { role: 'user' | 'assistant'; content: string; audioUrl?: string };
 
@@ -60,8 +63,20 @@ function getVoicesForOptions(): { id: string; label: string; voice: SpeechSynthe
 
 type VoiceDialogueProps = { headerRight?: React.ReactNode };
 
+const LANG_TO_RECOGNITION: Record<DialogueLang, string> = {
+  fr: 'fr-FR',
+  en: 'en-US',
+  mg: 'mg-MG',
+};
+
 export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
   const { data: session, status } = useSession();
+  const [selectedLanguage, setSelectedLanguage] = useState<DialogueLang | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const stored = localStorage.getItem(DIALOGUE_LANG_KEY);
+    if (stored === 'fr' || stored === 'en' || stored === 'mg') return stored;
+    return null;
+  });
   const [messages, setMessages] = useState<VoiceMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -250,7 +265,7 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
   const sendVoiceMessage = useCallback(
     async (text: string, audioUrl?: string) => {
       const trimmed = text.trim();
-      if (!trimmed || loading) return;
+      if (!trimmed || loading || !selectedLanguage) return;
 
       let currentConvId = conversationId;
       if (session?.user && !currentConvId) {
@@ -277,6 +292,7 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
             message: trimmed,
             history: messages.map((m) => ({ role: m.role, content: m.content })),
             voiceMode: true,
+            preferredLanguage: selectedLanguage || 'fr',
           }),
           signal: abortRef.current.signal,
         });
@@ -309,11 +325,11 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
         setLoading(false);
       }
     },
-    [loading, messages, session, conversationId, saveMessage, updateConversationTitle, speak]
+    [loading, messages, session, conversationId, saveMessage, updateConversationTitle, speak, selectedLanguage]
   );
 
   const startRecording = async () => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !selectedLanguage) return;
     try {
       const SR = window.SpeechRecognition || (window as unknown as { webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition;
       if (!SR) {
@@ -355,7 +371,7 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
       const rec = new SR();
       rec.continuous = false;
       rec.interimResults = true;
-      rec.lang = 'fr-FR';
+      rec.lang = selectedLanguage ? LANG_TO_RECOGNITION[selectedLanguage] : 'fr-FR';
       rec.onresult = (e: SpeechRecognitionEvent) => {
         const r = e.results[e.results.length - 1];
         const t = r?.[0]?.transcript?.trim() ?? '';
@@ -448,8 +464,21 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
     setSidebarOpen(false);
   };
 
+  const handleLanguageSelect = useCallback((lang: DialogueLang) => {
+    setSelectedLanguage(lang);
+    if (typeof window !== 'undefined') localStorage.setItem(DIALOGUE_LANG_KEY, lang);
+  }, []);
+
+  const canChat = selectedLanguage !== null;
+
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col bg-gradient-to-b from-slate-50 to-white text-slate-900">
+      <LanguageSelectModal
+        isOpen={!canChat}
+        onSelect={handleLanguageSelect}
+        title="Choisissez votre langue"
+        subtitle="Sélectionnez la langue du dialogue vocal avant de commencer"
+      />
       {/* Header */}
       <header className="flex shrink-0 items-center justify-between gap-1 border-b border-slate-200 bg-white/95 px-2 py-2 backdrop-blur sm:px-4 sm:py-3">
         <div className="flex min-w-0 items-center gap-1 sm:gap-3">
@@ -461,9 +490,21 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
           >
             <History className="h-5 w-5 text-slate-600" />
           </button>
-          <h1 className="flex items-center gap-2 truncate text-sm font-semibold tracking-tight text-slate-800 sm:text-lg">
-            <MicVocal className="h-5 w-5 shrink-0 text-amber-500 sm:h-6 sm:w-6" />
-            <span>Dialogue vocal</span>
+          <h1 className="flex flex-col gap-0.5 truncate sm:flex-row sm:items-center sm:gap-2">
+            <span className="flex items-center gap-2 text-sm font-semibold tracking-tight text-slate-800 sm:text-lg">
+              <MicVocal className="h-5 w-5 shrink-0 text-amber-500 sm:h-6 sm:w-6" />
+              Dialogue vocal
+            </span>
+            {canChat && selectedLanguage && (
+              <button
+                type="button"
+                onClick={() => { setSelectedLanguage(null); }}
+                className="rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800 hover:bg-amber-200"
+                title="Changer la langue"
+              >
+                {LANG_OPTIONS.find((l) => l.id === selectedLanguage)?.flag} {LANG_OPTIONS.find((l) => l.id === selectedLanguage)?.label}
+              </button>
+            )}
           </h1>
         </div>
         <div className="flex shrink-0 items-center justify-end gap-1 sm:gap-2">
@@ -632,6 +673,7 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
           <button
             type="button"
             onClick={() => {
+              if (!canChat) return;
               if (isAssistantSpeaking) {
                 userInterruptedRef.current = true;
                 if (autoRestartTimeoutRef.current) clearTimeout(autoRestartTimeoutRef.current);
@@ -645,10 +687,13 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
                 startRecording();
               }
             }}
+            disabled={!canChat}
             className={`flex h-20 w-20 items-center justify-center rounded-full shadow-lg transition-all active:scale-95 sm:h-24 sm:w-24 ${
-              isRecording
-                ? 'animate-pulse bg-red-500 text-white shadow-red-500/40'
-                : 'bg-gradient-to-br from-amber-400 to-amber-600 text-white shadow-amber-500/30 hover:from-amber-500 hover:to-amber-700'
+              !canChat
+                ? 'cursor-not-allowed bg-slate-300 text-slate-500 opacity-70'
+                : isRecording
+                  ? 'animate-pulse bg-red-500 text-white shadow-red-500/40'
+                  : 'bg-gradient-to-br from-amber-400 to-amber-600 text-white shadow-amber-500/30 hover:from-amber-500 hover:to-amber-700'
             }`}
             aria-label={isRecording ? 'Arrêter' : isAssistantSpeaking ? 'Interrompre et parler' : 'Parler'}
           >

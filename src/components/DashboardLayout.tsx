@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import {
@@ -21,15 +21,17 @@ import {
   X,
   User,
   MicVocal,
+  MessageCircleCode,
 } from 'lucide-react';
 import LanguageChat from '@/components/LanguageChat';
 import VoiceDialogue from '@/components/VoiceDialogue';
+import MessageConversation from '@/components/MessageConversation';
 
-type NavView = 'documents' | 'dialogue' | 'chat' | 'settings' | 'users' | 'help';
+type NavView = 'conversation' | 'dialogue' | 'chat' | 'settings' | 'users' | 'help';
 
 const leftNavItems: { icon: typeof FileText; label: string; view: NavView }[] = [
-  { icon: FileText, label: 'Documents', view: 'documents' },
-  { icon: MicVocal, label: 'Dialogue', view: 'dialogue' },
+  { icon: MessageCircleCode, label: 'Dialogue message', view: 'conversation' },
+  { icon: MicVocal, label: 'Dialogue vocal', view: 'dialogue' },
   { icon: MessageSquare, label: 'Chat', view: 'chat' },
   { icon: Settings, label: 'Paramètres', view: 'settings' },
   { icon: Users, label: 'Utilisateurs', view: 'users' },
@@ -152,10 +154,37 @@ function ProfilePanelContent({
   );
 }
 
+const VALID_VIEWS: NavView[] = ['chat', 'conversation', 'dialogue'];
+
+function getViewFromUrl(): NavView {
+  if (typeof window === 'undefined') return 'chat';
+  const v = new URLSearchParams(window.location.search).get('view');
+  if (v && VALID_VIEWS.includes(v as NavView)) return v as NavView;
+  return 'chat';
+}
+
 export default function DashboardLayout() {
   const { data: session, status } = useSession();
   const [profileOpen, setProfileOpen] = useState(false);
-  const [activeView, setActiveView] = useState<NavView>('chat');
+  const [activeView, setActiveView] = useState<NavView>(() => getViewFromUrl());
+
+  useEffect(() => {
+    const handler = () => setActiveView(getViewFromUrl());
+    window.addEventListener('popstate', handler);
+    return () => window.removeEventListener('popstate', handler);
+  }, []);
+
+  const setActiveViewAndUrl = (view: NavView) => {
+    setActiveView(view);
+    const params = new URLSearchParams(window.location.search);
+    if (VALID_VIEWS.includes(view)) {
+      params.set('view', view);
+    } else {
+      params.delete('view');
+    }
+    const url = params.toString() ? `?${params.toString()}` : window.location.pathname;
+    window.history.replaceState(null, '', url);
+  };
 
   const mobileProfileTrigger = (
     <div className="flex items-center md:hidden">
@@ -207,15 +236,16 @@ export default function DashboardLayout() {
           {leftNavItems.map(({ icon: Icon, label, view }) => {
             const isActive = activeView === view;
             const isDialogue = view === 'dialogue';
+            const isConversation = view === 'conversation';
             const isChat = view === 'chat';
-            const isSwitchable = isDialogue || isChat;
+            const isSwitchable = isDialogue || isConversation || isChat;
 
             return (
-              <div key={label} className="group relative flex justify-center">
+              <div key={view} className="group relative flex justify-center">
                 {isSwitchable ? (
                   <button
                     type="button"
-                    onClick={() => setActiveView(view)}
+                    onClick={() => setActiveViewAndUrl(view)}
                     className={`relative flex h-11 w-11 items-center justify-center rounded-lg transition-colors ${
                       isActive ? 'bg-slate-800 text-amber-400' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
                     }`}
@@ -258,10 +288,12 @@ export default function DashboardLayout() {
         </nav>
       </aside>
 
-      {/* Zone centrale - Chat ou Dialogue vocal */}
+      {/* Zone centrale - Chat, Dialogue message ou Dialogue vocal */}
       <section className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-l-2xl bg-slate-100 text-slate-900 shadow-xl">
         {activeView === 'dialogue' ? (
           <VoiceDialogue headerRight={mobileProfileTrigger} />
+        ) : activeView === 'conversation' ? (
+          <MessageConversation headerRight={mobileProfileTrigger} />
         ) : (
           <LanguageChat headerRight={mobileProfileTrigger} />
         )}
