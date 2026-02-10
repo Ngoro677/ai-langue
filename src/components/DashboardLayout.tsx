@@ -22,18 +22,20 @@ import {
   User,
   MicVocal,
   MessageCircleCode,
+  FileQuestion,
 } from 'lucide-react';
 import LanguageChat from '@/components/LanguageChat';
 import VoiceDialogue from '@/components/VoiceDialogue';
 import MessageConversation from '@/components/MessageConversation';
+import VocalInterview from '@/components/VocalInterview';
 
-type NavView = 'conversation' | 'dialogue' | 'chat' | 'settings' | 'users' | 'help';
+type NavView = 'conversation' | 'dialogue' | 'chat' | 'faq' | 'users' | 'help';
 
 const leftNavItems: { icon: typeof FileText; label: string; view: NavView }[] = [
   { icon: MessageCircleCode, label: 'Dialogue message', view: 'conversation' },
   { icon: MicVocal, label: 'Dialogue vocal', view: 'dialogue' },
   { icon: MessageSquare, label: 'Chat', view: 'chat' },
-  { icon: Settings, label: 'Paramètres', view: 'settings' },
+  { icon: FileQuestion, label: 'Questions fréquentes', view: 'faq' },
   { icon: Users, label: 'Utilisateurs', view: 'users' },
   { icon: HelpCircle, label: 'Aide', view: 'help' },
 ];
@@ -154,7 +156,7 @@ function ProfilePanelContent({
   );
 }
 
-const VALID_VIEWS: NavView[] = ['chat', 'conversation', 'dialogue'];
+const VALID_VIEWS: NavView[] = ['chat', 'conversation', 'dialogue', 'faq'];
 
 function getViewFromUrl(): NavView {
   if (typeof window === 'undefined') return 'chat';
@@ -238,7 +240,8 @@ export default function DashboardLayout() {
             const isDialogue = view === 'dialogue';
             const isConversation = view === 'conversation';
             const isChat = view === 'chat';
-            const isSwitchable = isDialogue || isConversation || isChat;
+            const isFaq = view === 'faq';
+            const isSwitchable = isDialogue || isConversation || isChat || isFaq;
 
             return (
               <div key={view} className="group relative flex justify-center">
@@ -288,12 +291,14 @@ export default function DashboardLayout() {
         </nav>
       </aside>
 
-      {/* Zone centrale - Chat, Dialogue message ou Dialogue vocal */}
+      {/* Zone centrale - Chat, Dialogue message, Dialogue vocal ou Entretien vocal */}
       <section className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-l-2xl bg-slate-100 text-slate-900 shadow-xl">
         {activeView === 'dialogue' ? (
           <VoiceDialogue headerRight={mobileProfileTrigger} />
         ) : activeView === 'conversation' ? (
           <MessageConversation headerRight={mobileProfileTrigger} />
+        ) : activeView === 'faq' ? (
+          <VocalInterview headerRight={mobileProfileTrigger} />
         ) : (
           <LanguageChat headerRight={mobileProfileTrigger} />
         )}

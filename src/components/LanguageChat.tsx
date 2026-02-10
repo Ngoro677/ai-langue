@@ -59,10 +59,13 @@ function getVoicesForOptions(): { id: string; label: string; voice: SpeechSynthe
   }
 }
 
+import { useAudioCapabilities } from '@/hooks/useAudioCapabilities';
+
 type LanguageChatProps = { headerRight?: React.ReactNode };
 
 export default function LanguageChat({ headerRight }: LanguageChatProps) {
   const { data: session, status } = useSession();
+  const audioCap = useAudioCapabilities();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -296,13 +299,7 @@ export default function LanguageChat({ headerRight }: LanguageChatProps) {
     if (typeof window === 'undefined') return;
     try {
       const SR = window.SpeechRecognition || (window as unknown as { webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition;
-      if (!SR) {
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-        alert(isIOS
-          ? 'Le micro vocal n\'est pas disponible sur iPhone/iPad. Utilisez le clavier pour taper votre message.'
-          : 'Reconnaissance vocale non supportée. Utilisez Chrome sur Android ou le clavier.');
-        return;
-      }
+      if (!SR) return;
       lastVoiceTranscriptRef.current = '';
       voiceChunksRef.current = [];
       let stream: MediaStream | null = null;
@@ -313,8 +310,10 @@ export default function LanguageChat({ headerRight }: LanguageChatProps) {
         streamRef.current = null;
       }
       if (stream && window.MediaRecorder) {
-        const mime = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
-        const mr = new MediaRecorder(stream);
+        const mime = audioCap.preferredMimeType && MediaRecorder.isTypeSupported(audioCap.preferredMimeType)
+          ? audioCap.preferredMimeType
+          : MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
+        const mr = new MediaRecorder(stream, { mimeType: mime });
         mediaRecorderRef.current = mr;
         mr.ondataavailable = (e) => { if (e.data.size > 0) voiceChunksRef.current.push(e.data); };
         mr.onstop = () => {
@@ -678,9 +677,12 @@ export default function LanguageChat({ headerRight }: LanguageChatProps) {
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={isRecording ? stopRecording : startRecording}
-              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl active:scale-95 sm:h-12 sm:w-12 ${isRecording ? 'bg-red-500/20 text-red-600' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700'}`}
-              title="Message vocal : parlez, envoi automatique"
+              onClick={() => { if (audioCap.speechRecognitionSupported) (isRecording ? stopRecording : startRecording)(); }}
+              disabled={!audioCap.speechRecognitionSupported}
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl active:scale-95 sm:h-12 sm:w-12 ${
+                !audioCap.speechRecognitionSupported ? 'cursor-not-allowed bg-slate-50 text-slate-400' : isRecording ? 'bg-red-500/20 text-red-600' : 'bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700'
+              }`}
+              title={audioCap.speechRecognitionSupported ? 'Message vocal : parlez, envoi automatique' : 'Micro non disponible sur cet appareil. Utilisez le clavier.'}
             >
               {isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
             </button>

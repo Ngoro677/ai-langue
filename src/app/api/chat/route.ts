@@ -67,19 +67,23 @@ function cleanResponse(response: string, voiceMode = false): string {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { message, history = [], voiceMode = false, conversationMode = false, preferredLanguage = 'fr' } = body as {
+    const { message, history = [], voiceMode = false, conversationMode = false, preferredLanguage = 'fr', inactivityRelance = false } = body as {
       message?: string;
       history?: { role: string; content: string }[];
       voiceMode?: boolean;
       conversationMode?: boolean;
       preferredLanguage?: 'fr' | 'en' | 'mg';
+      inactivityRelance?: boolean;
     };
 
-    if (!message || typeof message !== 'string') {
+    const lang = preferredLanguage === 'en' || preferredLanguage === 'mg' ? preferredLanguage : 'fr';
+    const question = inactivityRelance
+      ? `L'utilisateur n'a pas parlé depuis 2 minutes. Envoie UNIQUEMENT une phrase courte et bienveillante pour le relancer à parler. Réponds dans la langue: ${lang === 'en' ? 'anglais' : lang === 'mg' ? 'malgache' : 'français'}.`
+      : (message ?? '');
+
+    if (typeof question !== 'string' || (!inactivityRelance && !question.trim())) {
       return NextResponse.json({ error: 'Message invalide' }, { status: 400 });
     }
-
-    const lang = preferredLanguage === 'en' || preferredLanguage === 'mg' ? preferredLanguage : 'fr';
     const systemPrompt = conversationMode
       ? buildConversationModePrompt(lang)
       : voiceMode
@@ -114,7 +118,7 @@ export async function POST(request: NextRequest) {
       new StringOutputParser(),
     ]);
 
-    const response = await chain.invoke({ question: message });
+    const response = await chain.invoke({ question });
     const cleaned = cleanResponse(response, voiceMode || conversationMode);
 
     return NextResponse.json({ response: cleaned });

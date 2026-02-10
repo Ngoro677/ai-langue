@@ -20,6 +20,8 @@ import {
   PhoneOff,
 } from 'lucide-react';
 import LanguageSelectModal, { type DialogueLang, LANG_OPTIONS } from '@/components/LanguageSelectModal';
+import VoiceInputFallback from '@/components/VoiceInputFallback';
+import { useAudioCapabilities } from '@/hooks/useAudioCapabilities';
 
 const DIALOGUE_LANG_KEY = 'ialangue-dialogue-lang';
 
@@ -71,6 +73,7 @@ const LANG_TO_RECOGNITION: Record<DialogueLang, string> = {
 
 export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
   const { data: session, status } = useSession();
+  const audioCap = useAudioCapabilities();
   const [selectedLanguage, setSelectedLanguage] = useState<DialogueLang | null>(() => {
     if (typeof window === 'undefined') return null;
     const stored = localStorage.getItem(DIALOGUE_LANG_KEY);
@@ -99,7 +102,10 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
   const streamRef = useRef<MediaStream | null>(null);
   const audioUnlocked = useRef(false);
   const autoRestartTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inactivityTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const userInterruptedRef = useRef(false);
+
+  const INACTIVITY_MS = 2 * 60 * 1000; // 2 minutes
 
   useEffect(() => {
     const load = () => {
@@ -118,6 +124,7 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
   useEffect(() => {
     return () => {
       if (autoRestartTimeoutRef.current) clearTimeout(autoRestartTimeoutRef.current);
+      if (inactivityTimeoutRef.current) clearTimeout(inactivityTimeoutRef.current);
       if (typeof window !== 'undefined') window.speechSynthesis?.cancel();
     };
   }, []);
@@ -262,6 +269,44 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
     [session?.user]
   );
 
+  const triggerInactivityRelance = useCallback(() => {
+    if (inactivityTimeoutRef.current) {
+      clearTimeout(inactivityTimeoutRef.current);
+      inactivityTimeoutRef.current = null;
+    }
+    fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: '',
+        history: messages.map((m) => ({ role: m.role, content: m.content })),
+        voiceMode: true,
+        preferredLanguage: selectedLanguage || 'fr',
+        inactivityRelance: true,
+      }),
+    })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.response) {
+          setMessages((prev) => [...prev, { role: 'assistant', content: d.response }]);
+          if (session?.user && conversationId) saveMessage('assistant', d.response, conversationId);
+          speak(d.response, () => {
+            if (userInterruptedRef.current) {
+              userInterruptedRef.current = false;
+              return;
+            }
+            if (autoRestartTimeoutRef.current) clearTimeout(autoRestartTimeoutRef.current);
+            autoRestartTimeoutRef.current = setTimeout(() => {
+              autoRestartTimeoutRef.current = null;
+              startRecording();
+            }, 600);
+            inactivityTimeoutRef.current = setTimeout(triggerInactivityRelance, INACTIVITY_MS);
+          });
+        }
+      })
+      .catch(() => {});
+  }, [messages, selectedLanguage, session?.user, conversationId, speak, saveMessage]);
+
   const sendVoiceMessage = useCallback(
     async (text: string, audioUrl?: string) => {
       const trimmed = text.trim();
@@ -276,6 +321,11 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
           setConversationId(data.id);
           setConversations((prev) => [{ id: data.id, title: 'Dialogue vocal' }, ...prev]);
         }
+      }
+
+      if (inactivityTimeoutRef.current) {
+        clearTimeout(inactivityTimeoutRef.current);
+        inactivityTimeoutRef.current = null;
       }
 
       const userMessage: VoiceMessage = { role: 'user', content: trimmed, ...(audioUrl && { audioUrl }) };
@@ -310,10 +360,18 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
             return;
           }
           if (autoRestartTimeoutRef.current) clearTimeout(autoRestartTimeoutRef.current);
+          if (inactivityTimeoutRef.current) clearTimeout(inactivityTimeoutRef.current);
           autoRestartTimeoutRef.current = setTimeout(() => {
             autoRestartTimeoutRef.current = null;
             startRecording();
           }, 600);
+          inactivityTimeoutRef.current = setTimeout(() => {
+            if (autoRestartTimeoutRef.current) {
+              clearTimeout(autoRestartTimeoutRef.current);
+              autoRestartTimeoutRef.current = null;
+            }
+            triggerInactivityRelance();
+          }, INACTIVITY_MS);
         });
       } catch (e) {
         if ((e as Error).name === 'AbortError') return;
@@ -325,7 +383,7 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
         setLoading(false);
       }
     },
-    [loading, messages, session, conversationId, saveMessage, updateConversationTitle, speak, selectedLanguage]
+    [loading, messages, session, conversationId, saveMessage, updateConversationTitle, speak, selectedLanguage, triggerInactivityRelance]
   );
 
   const startRecording = async () => {
@@ -333,8 +391,6 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
     try {
       const SR = window.SpeechRecognition || (window as unknown as { webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition;
       if (!SR) {
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-        alert(isIOS ? "Le micro n'est pas disponible sur iPhone/iPad." : 'Reconnaissance vocale non supportée. Utilisez Chrome sur Android.');
         return;
       }
       lastVoiceTranscriptRef.current = '';
@@ -348,8 +404,10 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
         streamRef.current = null;
       }
       if (stream && window.MediaRecorder) {
-        const mime = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
-        const mr = new MediaRecorder(stream);
+        const mime = audioCap.preferredMimeType && MediaRecorder.isTypeSupported(audioCap.preferredMimeType)
+          ? audioCap.preferredMimeType
+          : MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4';
+        const mr = new MediaRecorder(stream, { mimeType: mime });
         mediaRecorderRef.current = mr;
         mr.ondataavailable = (e) => {
           if (e.data.size > 0) voiceChunksRef.current.push(e.data);
@@ -421,6 +479,10 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
 
   const endConversation = useCallback(() => {
     userInterruptedRef.current = true;
+    if (inactivityTimeoutRef.current) {
+      clearTimeout(inactivityTimeoutRef.current);
+      inactivityTimeoutRef.current = null;
+    }
     if (autoRestartTimeoutRef.current) {
       clearTimeout(autoRestartTimeoutRef.current);
       autoRestartTimeoutRef.current = null;
@@ -492,14 +554,14 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
           </button>
           <h1 className="flex flex-col gap-0.5 truncate sm:flex-row sm:items-center sm:gap-2">
             <span className="flex items-center gap-2 text-sm font-semibold tracking-tight text-slate-800 sm:text-lg">
-              <MicVocal className="h-5 w-5 shrink-0 text-amber-500 sm:h-6 sm:w-6" />
+              <MicVocal className="h-5 w-5 shrink-0 text-yellow-500 sm:h-6 sm:w-6" />
               Dialogue vocal
             </span>
             {canChat && selectedLanguage && (
               <button
                 type="button"
                 onClick={() => { setSelectedLanguage(null); }}
-                className="rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800 hover:bg-amber-200"
+                className="rounded bg-yellow-100 px-1.5 py-0.5 text-xs text-yellow-800 hover:bg-yellow-200"
                 title="Changer la langue"
               >
                 {LANG_OPTIONS.find((l) => l.id === selectedLanguage)?.flag} {LANG_OPTIONS.find((l) => l.id === selectedLanguage)?.label}
@@ -512,7 +574,7 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
             <select
               value={selectedVoiceId}
               onChange={(e) => setSelectedVoiceId(e.target.value)}
-              className="w-full min-w-0 appearance-none rounded-lg border border-slate-300 bg-white py-2 pl-3 pr-8 text-sm text-slate-700 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+              className="w-full min-w-0 appearance-none rounded-lg border border-slate-300 bg-white py-2 pl-3 pr-8 text-sm text-slate-700 focus:border-yellow-500 focus:outline-none focus:ring-1 focus:ring-yellow-500"
               title="Voix de l'assistant"
             >
               {voiceOptions.map((v) => (
@@ -528,7 +590,7 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
             <select
               value={speechSpeed}
               onChange={(e) => setSpeechSpeed(e.target.value as (typeof SPEECH_SPEED_OPTIONS)[number]['id'])}
-              className="w-16 appearance-none rounded-lg border border-slate-300 bg-white py-2 pl-8 pr-7 text-sm text-slate-700 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 md:w-auto"
+              className="w-16 appearance-none rounded-lg border border-slate-300 bg-white py-2 pl-8 pr-7 text-sm text-slate-700 focus:border-yellow-500 focus:outline-none focus:ring-1 focus:ring-yellow-500 md:w-auto"
               title="Vitesse de lecture"
             >
               {SPEECH_SPEED_OPTIONS.map((s) => (
@@ -539,7 +601,7 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
             </select>
           </div>
           {headerRight ?? (!session?.user && status !== 'loading' && (
-            <Link href="/login" className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500 text-slate-900 hover:bg-amber-400 md:hidden" aria-label="Se connecter">
+            <Link href="/login" className="flex h-9 w-9 items-center justify-center rounded-lg bg-yellow-500 text-slate-900 hover:bg-yellow-400 md:hidden" aria-label="Se connecter">
               <LogIn className="h-4 w-4" />
             </Link>
           ))}
@@ -562,7 +624,7 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
             </div>
             {!session?.user ? (
               <p className="p-4 text-sm text-slate-500">
-                <Link href="/login" className="text-amber-600 hover:underline">Connectez-vous</Link> pour enregistrer vos dialogues vocaux.
+                <Link href="/login" className="text-yellow-600 hover:underline">Connectez-vous</Link> pour enregistrer vos dialogues vocaux.
               </p>
             ) : (
               <>
@@ -586,7 +648,7 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
                         <button
                           type="button"
                           onClick={() => loadConversation(c.id)}
-                          className={`w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-100 ${conversationId === c.id ? 'bg-amber-50 text-amber-800' : 'text-slate-700'}`}
+                          className={`w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-100 ${conversationId === c.id ? 'bg-yellow-50 text-yellow-800' : 'text-slate-700'}`}
                         >
                           {c.title}
                         </button>
@@ -614,14 +676,14 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
                     : phase === 'thinking'
                       ? 'bg-slate-200 ring-4 ring-slate-300/50'
                       : phase === 'speaking'
-                        ? 'bg-amber-500/20 ring-4 ring-amber-400/50'
+                        ? 'bg-yellow-500/20 ring-4 ring-yellow-400/50'
                         : 'bg-gradient-to-br from-slate-100 to-slate-200 ring-4 ring-slate-300/30'
                 }`}
               >
                 {phase === 'listening' && <Mic className="h-14 w-14 text-red-600 sm:h-16 sm:w-16" />}
-                {phase === 'thinking' && <Loader2 className="h-14 w-14 animate-spin text-amber-600 sm:h-16 sm:w-16" />}
+                {phase === 'thinking' && <Loader2 className="h-14 w-14 animate-spin text-yellow-600 sm:h-16 sm:w-16" />}
                 {(phase === 'speaking' || phase === 'idle') && (
-                  <PhoneCall className={`h-14 w-14 text-slate-600 sm:h-16 sm:w-16 ${phase === 'speaking' ? 'text-amber-600' : ''}`} />
+                  <PhoneCall className={`h-14 w-14 text-slate-600 sm:h-16 sm:w-16 ${phase === 'speaking' ? 'text-yellow-600' : ''}`} />
                 )}
               </div>
 
@@ -645,9 +707,9 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
                   {messages.slice(-2).map((m, i) => (
                     <div key={i} className="flex gap-2">
                       {m.role === 'user' ? (
-                        <User className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+                        <User className="mt-0.5 h-4 w-4 shrink-0 text-yellow-500" />
                       ) : (
-                        <Bot className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                        <Bot className="mt-0.5 h-4 w-4 shrink-0 text-yellow-600" />
                       )}
                       <p className={`min-w-0 flex-1 text-sm ${m.role === 'user' ? 'text-slate-700' : 'text-slate-600'}`}>
                         {m.content.slice(0, 200)}{m.content.length > 200 ? '…' : ''}
@@ -659,7 +721,7 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
 
               {!session?.user && (
                 <p className="mt-4 text-xs text-slate-500">
-                  <Link href="/login" className="text-amber-600 hover:underline">Connectez-vous</Link> pour enregistrer l&apos;historique.
+                  <Link href="/login" className="text-yellow-600 hover:underline">Connectez-vous</Link> pour enregistrer l&apos;historique.
                 </p>
               )}
             </div>
@@ -667,9 +729,24 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
         })()}
       </main>
 
-      {/* Bouton micro : parler / arrêter / interrompre l'assistant */}
+      {/* Bouton micro ou fallback clavier (iOS Safari) */}
       <div className="shrink-0 border-t border-slate-200 bg-white/95 p-4 backdrop-blur sm:p-6">
         <div className="mx-auto flex max-w-3xl flex-col items-center gap-3">
+          {!audioCap.speechRecognitionSupported && (
+            <>
+              <p className="rounded-lg bg-amber-50 px-3 py-2 text-center text-sm text-amber-800">
+                Sur iPhone/iPad, utilisez le clavier ci-dessous pour taper vos messages. La reconnaissance vocale est disponible sur Android (Chrome) ou via l&apos;app native.
+              </p>
+              <VoiceInputFallback
+                onSend={(t) => sendVoiceMessage(t)}
+                disabled={!canChat || loading}
+                placeholder="Tapez votre message..."
+                className="w-full max-w-md"
+              />
+            </>
+          )}
+          {audioCap.speechRecognitionSupported && (
+            <>
           <button
             type="button"
             onClick={() => {
@@ -693,7 +770,7 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
                 ? 'cursor-not-allowed bg-slate-300 text-slate-500 opacity-70'
                 : isRecording
                   ? 'animate-pulse bg-red-500 text-white shadow-red-500/40'
-                  : 'bg-gradient-to-br from-amber-400 to-amber-600 text-white shadow-amber-500/30 hover:from-amber-500 hover:to-amber-700'
+                  : 'bg-gradient-to-br from-yellow-400 to-yellow-600 text-white shadow-yellow-500/30 hover:from-yellow-500 hover:to-yellow-700'
             }`}
             aria-label={isRecording ? 'Arrêter' : isAssistantSpeaking ? 'Interrompre et parler' : 'Parler'}
           >
@@ -715,6 +792,8 @@ export default function VoiceDialogue({ headerRight }: VoiceDialogueProps) {
             {isAssistantSpeaking && 'Appuyez pour interrompre et reprendre la parole'}
             {!isRecording && !isAssistantSpeaking && !loading && 'Comme un appel : parlez, écoutez, reprenez'}
           </p>
+            </>
+          )}
         </div>
       </div>
     </div>
